@@ -257,3 +257,11 @@ csrc/cpu/cpu_attn_dispatch_generated.h
 /.rocm-version/
 /.rocm-wheel/
 /.rocm-kernel-map/
+
+# Local Nsight profiling artifacts
+profiles/**/*.nsys-rep
+profiles/**/*.qdstrm
+profiles/**/*.sqlite
+profiles/**/*.sqlite-*
+profiles/**/*.core
+profiles/**/core
