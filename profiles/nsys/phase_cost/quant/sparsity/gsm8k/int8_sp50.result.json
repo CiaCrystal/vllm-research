@@ -1,0 +1,27 @@
+{
+  "accuracy": 0.02122820318423048,
+  "invalid_rate": 0.0,
+  "latency": 88.48789355199915,
+  "questions_per_second": 14.905993882936098,
+  "total_output_tokens": 337664,
+  "tokens_per_second": 3815.934434031641,
+  "num_questions": 1319,
+  "num_shots": 5,
+  "max_tokens": 256,
+  "timestamp": 1793960353.9441874,
+  "request_params": {
+    "endpoint": "completions",
+    "model": "/home/bca/models/qwen3-0.6b-int8-w8a8-dynamic-sp50",
+    "temperature": 0.0,
+    "top_p": null,
+    "top_k": null,
+    "seed": 42,
+    "stop": [
+      "Question",
+      "Assistant:",
+      "<|separator|>"
+    ],
+    "reasoning_effort": null,
+    "chat_template_kwargs": null
+  }
+}

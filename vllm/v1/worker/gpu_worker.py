@@ -635,6 +635,11 @@ class Worker(WorkerBase):
             return GPUModelRunnerV2(self.vllm_config, self.device)  # type: ignore
         from vllm.v1.worker.gpu_model_runner import GPUModelRunner as GPUModelRunnerV1
 
+        if envs.VLLM_NVTX_ENABLE:
+            logger.warning(
+                "VLLM_NVTX_ENABLE has no effect: phase NVTX ranges are only "
+                "implemented in Model Runner V2, and this run uses the V1 runner."
+            )
         return GPUModelRunnerV1(self.vllm_config, self.device)
 
     def handle_ft_command(self, ft_request):
@@ -1056,7 +1061,9 @@ class Worker(WorkerBase):
             return self._compile_or_warm_up_model()
         # MRV2 warmup forwards record expert load like real ones.
         with self.model_runner.eplb.suppress():  # type: ignore
-            return self._compile_or_warm_up_model()
+            compilation_times = self._compile_or_warm_up_model()
+        self._v2_model_runner().enable_nvtx_ranges()
+        return compilation_times
 
     def _compile_or_warm_up_model(self) -> CompilationTimes:
         if self.cache_config.enable_extensible_kv_cache:

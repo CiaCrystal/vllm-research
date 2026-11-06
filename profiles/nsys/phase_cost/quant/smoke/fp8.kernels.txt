@@ -1,0 +1,37 @@
+steps Counter({'Decode': 96, 'Prefill': 3}) seq PDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDPDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDPDDDDDDDDDDDDD
+exec ctx [('execute_context_0(0)_generation_1(1)', 96), ('execute_context_0(0)_generation_0(0)', 6), ('execute_context_1(256)_generation_0(0)', 3)]
+   103.25 ms n= 11088 device_kernel                            void cutlass::device_kernel<enable_sm120_family<cutlass::gemm::kernel::GemmUniversal<cute::tuple<int, int, int
+    54.88 ms n=    99 kernel                                   std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16,
+    17.69 ms n=  2772 flash_fwd_splitkv_kernel                 void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<(int)128, (int)64, (int)128, (int)4, (bool)0, (bo
+     8.52 ms n=  2688 flash_fwd_splitkv_combine_kernel         void flash::flash_fwd_splitkv_combine_kernel<Flash_fwd_kernel_traits<(int)128, (int)64, (int)128, (int)4, (boo
+     3.39 ms n=  2772 reshape_and_cache_flash_kernel           void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16, (vllm::Fp8KVCacheDataType)0>(const T1 
+     3.01 ms n=  2673 triton_per_fused__to_copy_abs__9...      triton_per_fused__to_copy_abs_amax_clamp_cutlass_scaled_mm_div_fused_add_rms_norm_mul_reciprocal_unsqueeze_3
+     2.97 ms n=  2673 triton_per_fused_add_cat_index_10...     triton_per_fused_add_cat_index_select_mul_rms_norm_split_split_with_sizes_sub_unsqueeze_view_4
+     2.91 ms n=  2673 triton_per_fused_add_cat_index_11...     triton_per_fused_add_cat_index_select_mul_rms_norm_split_split_with_sizes_sub_unsqueeze_view_5
+     2.87 ms n=  2772 triton_red_fused__to_copy_abs__8...      triton_red_fused__to_copy_abs_amax_clamp_cutlass_scaled_mm_div_mul_reciprocal_silu_slice_unsqueeze_2
+     2.73 ms n=  2772 triton_per_fused__to_copy_abs__7...      triton_per_fused__to_copy_abs_amax_clamp_cutlass_scaled_mm_div_fused_add_rms_norm_mul_reciprocal_unsqueeze_1
+     2.17 ms n=  2772 triton_red_fused__to_copy_abs__6...      triton_red_fused__to_copy_abs_amax_clamp_cutlass_scaled_mm_div_mul_reciprocal_unsqueeze_view_0
+     0.79 ms n=   297 index_elementwise_kernel                 void at::native::index_elementwise_kernel<(int)128, (int)4, void at::native::gpu_index_kernel<void at::native:
+     0.24 ms n=    99 reduce_kernel                            void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::ArgMaxOps<float>, uns
+     0.19 ms n=    99 _post_update_kernel                      _post_update_kernel
+     0.18 ms n=    99 _compute_slot_mappings_kernel            _compute_slot_mappings_kernel
+     0.16 ms n=    99 _gather_block_tables_kernel              _gather_block_tables_kernel
+     0.15 ms n=   297 vectorized_elementwise_kernel            void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<int>, std::array<char *, (unsig
+     0.13 ms n=    99 _gumbel_sample_kernel                    _gumbel_sample_kernel
+     0.13 ms n=    99 triton_per_fused__to_copy_abs__3...      triton_per_fused__to_copy_abs_amax_clamp_cutlass_scaled_mm_div_embedding_mul_reciprocal_rms_norm_unsqueeze_0
+     0.12 ms n=    99 _scatter_gather_elementwise_kernel       void at::native::_scatter_gather_elementwise_kernel<(int)128, (int)8, void at::native::_cuda_scatter_gather_in
+     0.12 ms n=    99 triton_per_fused_add_cat_index_4...      triton_per_fused_add_cat_index_select_mul_rms_norm_split_split_with_sizes_sub_unsqueeze_view_1
+     0.11 ms n=    99 _get_num_sampled_and_rejected__2...      _get_num_sampled_and_rejected_kernel
+     0.11 ms n=    99 _combine_sampled_and_draft_tok_1...      _combine_sampled_and_draft_tokens_kernel
+     0.11 ms n=    99 triton_per_fused_add_cat_index_5...      triton_per_fused_add_cat_index_select_mul_rms_norm_split_split_with_sizes_sub_unsqueeze_view_2
+     0.09 ms n=    99 triton_per_fused_fused_add_rms_12...     triton_per_fused_fused_add_rms_norm_3
+     0.09 ms n=    99 _prepare_pos_seq_lens_kernel             _prepare_pos_seq_lens_kernel
+     0.05 ms n=    99 elementwise_kernel_with_index            void <unnamed>::elementwise_kernel_with_index<int, at::native::arange_cuda_out(const c10::Scalar &, const c10:
+     0.02 ms n=    18 _apply_write_kernel                      _apply_write_kernel
+     0.00 ms n=     3 _prepare_prefill_inputs_kernel           _prepare_prefill_inputs_kernel
+== Prefill: 337 kernels; first 2 layers:
+   ['triton_per_fused__to_copy_abs_@2', 'device_kernel@20', 'triton_per_fused_add_cat_index@3', 'triton_per_fused_add_cat_index@2', 'reshape_and_cache_flash_kernel@3', 'flash_fwd_splitkv_kernel@16', 'triton_red_fused__to_copy_abs_@1', 'device_kernel@14', 'triton_per_fused__to_copy_abs_@1', 'device_kernel@26', 'triton_red_fused__to_copy_abs_@3', 'device_kernel@20', 'triton_per_fused__to_copy_abs_@2', 'device_kernel@20', 'triton_per_fused_add_cat_index@3', 'triton_per_fused_add_cat_index@2', 'reshape_and_cache_flash_kernel@3', 'flash_fwd_splitkv_kernel@15', 'triton_red_fused__to_copy_abs_@1', 'device_kernel@14', 'triton_per_fused__to_copy_abs_@2', 'device_kernel@26', 'triton_red_fused__to_copy_abs_@3', 'device_kernel@20', 'triton_per_fused__to_copy_abs_@2', 'device_kernel@20', 'triton_per_fused_add_cat_index@3', 'triton_per_fused_add_cat_index@2', 'reshape_and_cache_flash_kernel@3', 'flash_fwd_splitkv_kernel@15', 'triton_red_fused__to_copy_abs_@1', 'device_kernel@14', 'triton_per_fused__to_copy_abs_@1', 'device_kernel@26', 'triton_red_fused__to_copy_abs_@3', 'device_kernel@20', 'triton_per_fused__to_copy_abs_@2', 'device_kernel@20', 'triton_per_fused_add_cat_index@3', 'triton_per_fused_add_cat_index@2', 'reshape_and_cache_flash_kernel@3', 'flash_fwd_splitkv_kernel@15', 'triton_red_fused__to_copy_abs_@1', 'device_kernel@14']
+   last: ['device_kernel', 'triton_per_fused__to_copy_abs_', 'device_kernel', 'triton_red_fused__to_copy_abs_', 'device_kernel', 'triton_per_fused_fused_add_rms']
+== Decode: 365 kernels; first 2 layers:
+   ['triton_per_fused__to_copy_abs_@1', 'device_kernel@9', 'triton_per_fused_add_cat_index@1', 'triton_per_fused_add_cat_index@1', 'reshape_and_cache_flash_kernel@1', 'flash_fwd_splitkv_kernel@6', 'flash_fwd_splitkv_combine_kern@3', 'triton_red_fused__to_copy_abs_@1', 'device_kernel@7', 'triton_per_fused__to_copy_abs_@1', 'device_kernel@12', 'triton_red_fused__to_copy_abs_@1', 'device_kernel@8', 'triton_per_fused__to_copy_abs_@1', 'device_kernel@9', 'triton_per_fused_add_cat_index@1', 'triton_per_fused_add_cat_index@1', 'reshape_and_cache_flash_kernel@1', 'flash_fwd_splitkv_kernel@6', 'flash_fwd_splitkv_combine_kern@3', 'triton_red_fused__to_copy_abs_@1', 'device_kernel@7', 'triton_per_fused__to_copy_abs_@1', 'device_kernel@12', 'triton_red_fused__to_copy_abs_@1', 'device_kernel@8', 'triton_per_fused__to_copy_abs_@1', 'device_kernel@9', 'triton_per_fused_add_cat_index@1', 'triton_per_fused_add_cat_index@1', 'reshape_and_cache_flash_kernel@1', 'flash_fwd_splitkv_kernel@6', 'flash_fwd_splitkv_combine_kern@3', 'triton_red_fused__to_copy_abs_@1', 'device_kernel@6', 'triton_per_fused__to_copy_abs_@1', 'device_kernel@12', 'triton_red_fused__to_copy_abs_@1', 'device_kernel@8', 'triton_per_fused__to_copy_abs_@1', 'device_kernel@9', 'triton_per_fused_add_cat_index@1', 'triton_per_fused_add_cat_index@1', 'reshape_and_cache_flash_kernel@1']
+   last: ['device_kernel', 'triton_per_fused__to_copy_abs_', 'device_kernel', 'triton_red_fused__to_copy_abs_', 'device_kernel', 'triton_per_fused_fused_add_rms']

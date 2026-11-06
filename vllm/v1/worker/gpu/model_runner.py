@@ -19,7 +19,7 @@ instead of embedding feature-specific logic directly.
 import functools
 import gc
 import time
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from contextlib import AbstractContextManager, nullcontext
 from copy import deepcopy
 from dataclasses import replace
@@ -73,6 +73,7 @@ from vllm.sequence import IntermediateTensors
 from vllm.tasks import SupportedTask
 from vllm.utils.gc_utils import freeze_gc_for_cudagraph_capture
 from vllm.utils.mem_utils import DeviceMemoryProfiler, format_gib
+from vllm.utils.nvtx_phase_ranges import install_nvtx_ranges, no_step_range
 from vllm.utils.torch_utils import STR_DTYPE_TO_TORCH_DTYPE, async_tensor_h2d
 from vllm.v1.core.sched.output import GrammarOutput, SchedulerOutput
 from vllm.v1.kv_cache_interface import (
@@ -200,6 +201,8 @@ logger = init_logger(__name__)
 
 
 class GPUModelRunner(LoRAModelRunnerMixin):
+    nvtx_step_range: Callable = staticmethod(no_step_range)
+
     def __init__(self, vllm_config: VllmConfig, device: torch.device):
         self.vllm_config = vllm_config
         self.model_config = vllm_config.model_config
@@ -1140,6 +1143,13 @@ class GPUModelRunner(LoRAModelRunnerMixin):
             self.cudagraph_manager is not None
             and self.cudagraph_manager.needs_capture()
         )
+
+    def enable_nvtx_ranges(self) -> None:
+        """Called after warmup, whose synthetic steps run the real execute_model."""
+        if self.nvtx_step_range is no_step_range:
+            self.nvtx_step_range = install_nvtx_ranges(
+                self.model, self.compilation_config
+            )
 
     @torch.inference_mode()
     def capture_model(self, *, profile_only: bool = False) -> int:
@@ -2114,53 +2124,54 @@ class GPUModelRunner(LoRAModelRunnerMixin):
         self.step_timing.forward_start()
 
         # Run model.
-        if batch_desc.cg_mode == CUDAGraphMode.FULL:
-            # Use explicit cudagraph replay for FULL mode.
-            # NOTE(woosuk): Here, we don't need to pass the input tensors,
-            # because they are already copied to the CUDA graph input buffers.
-            assert self.cudagraph_manager is not None
-            self.kv_connector.pre_forward(
-                scheduler_output, input_batch, attn_metadata=attn_metadata
-            )
-            model_output = self.cudagraph_manager.run_fullgraph(batch_desc)
-        else:
-            # For piecewise and eager mode, just call model().
-            batch_descriptor = BatchDescriptor(
-                num_tokens=input_batch.num_tokens_after_padding,
-                has_lora=self.lora_config is not None,
-                num_active_loras=batch_desc.num_active_loras,
-            )
+        with self.nvtx_step_range(batch_req_state):
+            if batch_desc.cg_mode == CUDAGraphMode.FULL:
+                # Use explicit cudagraph replay for FULL mode.
+                # NOTE(woosuk): Here, we don't need to pass the input tensors,
+                # because they are already copied to the CUDA graph input buffers.
+                assert self.cudagraph_manager is not None
+                self.kv_connector.pre_forward(
+                    scheduler_output, input_batch, attn_metadata=attn_metadata
+                )
+                model_output = self.cudagraph_manager.run_fullgraph(batch_desc)
+            else:
+                # For piecewise and eager mode, just call model().
+                batch_descriptor = BatchDescriptor(
+                    num_tokens=input_batch.num_tokens_after_padding,
+                    has_lora=self.lora_config is not None,
+                    num_active_loras=batch_desc.num_active_loras,
+                )
 
-            with set_forward_context(
-                attn_metadata,
-                self.vllm_config,
-                num_tokens=input_batch.num_tokens_after_padding,
-                cudagraph_runtime_mode=batch_desc.cg_mode,
-                num_tokens_across_dp=dp_sync_state
-                and dp_sync_state.num_tokens_across_dp,
-                batch_descriptor=batch_descriptor,
-                ubatch_slices=ubatch_slices,
-                slot_mapping=slot_mappings_by_layer,
-                skip_compiled=skip_compiled,
-                is_padding=input_batch.is_padding,
-            ):
-                self.kv_connector.pre_forward(scheduler_output, input_batch)
-                if ubatch_state is not None:
-                    assert self.ubatch_runner is not None
-                    model_output = self.ubatch_runner.run(
-                        self.model, model_inputs, ubatch_state
-                    )
-                elif batch_desc.cg_mode == CUDAGraphMode.PIECEWISE:
-                    # Run the PIECEWISE graph (compiled PW cudagraph or breakable
-                    # cudagraph, chosen inside run_pw_graph). cg_mode is only
-                    # PIECEWISE after the cudagraph manager exists.
-                    assert self.cudagraph_manager is not None
-                    model_output = self.cudagraph_manager.run_pw_graph(
-                        self.model, model_inputs
-                    )
-                else:
-                    # Eager (NONE): call the raw model directly.
-                    model_output = self.model(**model_inputs)
+                with set_forward_context(
+                    attn_metadata,
+                    self.vllm_config,
+                    num_tokens=input_batch.num_tokens_after_padding,
+                    cudagraph_runtime_mode=batch_desc.cg_mode,
+                    num_tokens_across_dp=dp_sync_state
+                    and dp_sync_state.num_tokens_across_dp,
+                    batch_descriptor=batch_descriptor,
+                    ubatch_slices=ubatch_slices,
+                    slot_mapping=slot_mappings_by_layer,
+                    skip_compiled=skip_compiled,
+                    is_padding=input_batch.is_padding,
+                ):
+                    self.kv_connector.pre_forward(scheduler_output, input_batch)
+                    if ubatch_state is not None:
+                        assert self.ubatch_runner is not None
+                        model_output = self.ubatch_runner.run(
+                            self.model, model_inputs, ubatch_state
+                        )
+                    elif batch_desc.cg_mode == CUDAGraphMode.PIECEWISE:
+                        # Run the PIECEWISE graph (compiled PW cudagraph or breakable
+                        # cudagraph, chosen inside run_pw_graph). cg_mode is only
+                        # PIECEWISE after the cudagraph manager exists.
+                        assert self.cudagraph_manager is not None
+                        model_output = self.cudagraph_manager.run_pw_graph(
+                            self.model, model_inputs
+                        )
+                    else:
+                        # Eager (NONE): call the raw model directly.
+                        model_output = self.model(**model_inputs)
 
         self.kv_connector.finish_forward()
 

@@ -44,6 +44,26 @@ If work is duplicate/trivial busywork, **do not proceed**. Return a short explan
 
 ## 2. Development Workflow
 
+### Local development environment
+
+These local conventions take precedence over the general setup and installation
+instructions below. Record and use the existing environment; do not perform
+environment installation or system configuration automatically.
+
+- Project root: `/home/bca/code/vllm`.
+- Existing Python virtual environment: `/home/bca/code/vllm/.venv`.
+- Prefer `/home/bca/code/vllm/.venv/bin/python` when running Python.
+- Before running vLLM commands, activate the environment from the project root:
+  `source .venv/bin/activate`.
+- For WSL CUDA, use the existing WSL Driver library paths:
+  `/usr/lib/wsl/lib` and
+  `/usr/lib/wsl/drivers/nv_dispi.inf_amd64_20f49c6eb5c9b39b`.
+- Do not reinstall or upgrade PyTorch, CUDA, or vLLM dependencies.
+- Do not modify or delete the existing `.venv`.
+- Do not automatically commit or push Git changes.
+- Do not add raw profiling files to Git.
+- Check Git status before modifying code, and show the Git diff when finished.
+
 - **Never use system `python3` or bare `pip`/`pip install`.** All Python commands must go through `uv` and `.venv/bin/python`.
 
 ### Environment setup

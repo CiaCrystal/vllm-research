@@ -278,6 +278,24 @@ vllm bench serve \
 
 With `--profile`, vLLM will capture a profile for each run of `vllm bench serve`. Once the server is killed, the profiles will all be saved.
 
+#### Per-layer NVTX ranges
+
+Set `VLLM_NVTX_ENABLE=1` to label each model forward with what vLLM actually scheduled:
+
+- `Step/Prefill`, `Step/Decode` and `Step/Mixed` around the model forward.
+- `<phase>/Layer_NN/Attention` and `<phase>/Layer_NN/FFN` around `self_attn` and `mlp` of each decoder layer.
+
+A step is `Prefill` when every scheduled request is still consuming its prefill tokens, including chunked prefill and requests replaying tokens after preemption, and `Decode` when none is. A batch with both is `Mixed`, since a layer runs once over all of its tokens. Warmup and dummy runs are not labelled.
+
+Per-layer ranges require `--enforce-eager`, because `torch.compile` and CUDA graph replay do not run the Python code of the layers. Without it vLLM logs a warning and emits only the `Step/*` ranges, with the compilation settings unchanged. The ranges are also only implemented in Model Runner V2.
+
+```bash
+VLLM_NVTX_ENABLE=1 nsys profile -t cuda,nvtx,osrt --trace-fork-before-exec=true -o qwen3_nvtx \
+    vllm serve Qwen/Qwen3-0.6B --enforce-eager
+```
+
+NVTX ranges measure CPU time. CUDA kernels run asynchronously, so use the GPU projection (`nsys stats -r nvtx_gpu_proj_sum`) for time spent on the GPU.
+
 #### Analysis
 
 You can view these profiles either as summaries in the CLI, using `nsys stats [profile-file]`, or in the GUI by installing Nsight [locally following the directions here](https://developer.nvidia.com/nsight-systems/get-started).
