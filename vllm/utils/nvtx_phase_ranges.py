@@ -2,9 +2,10 @@
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 """NVTX ranges labelled with the phase of each step, for VLLM_NVTX_ENABLE=1.
 
-Emits `Step/<phase>` around each model forward and, in eager mode only,
-`<phase>/Layer_NN/Attention` and `<phase>/Layer_NN/FFN` around the decoder layers,
-where phase is Prefill, Decode or Mixed. With the variable unset nothing is
+Emits `Step/<phase> #<n> reqs= tokens= cudagraph= hw= linear=` around each model
+forward and, in eager mode only, `<phase>/Layer_NN/Attention`, `<phase>/Layer_NN/FFN`
+and `<phase>/Layer_NN/<Attention|FFN>/<linear> kernel= shape=` inside the decoder
+layers, where phase is Prefill, Decode or Mixed. With the variable unset nothing is
 installed, so the forward path is unchanged.
 
 Layer ranges need Python to run inside the model: Dynamo rejects NVTX calls under
@@ -13,12 +14,14 @@ They are added by wrapping `forward` on eager models, not by editing model code.
 """
 
 import re
+from collections import Counter
 from collections.abc import Callable, Iterator
 from contextlib import AbstractContextManager, contextmanager, nullcontext
 from functools import wraps
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+import torch
 import torch.cuda.nvtx as nvtx
 from torch import nn
 
@@ -36,6 +39,7 @@ NVTX_ENABLED: bool = envs.VLLM_NVTX_ENABLE
 _PHASES = ("Prefill", "Decode", "Mixed")
 _RANGE_NAMES = {"self_attn": "Attention", "mlp": "FFN"}
 _DECODER_LAYER_NAME = re.compile(r"(?:^|\.)layers\.(\d+)$")
+_KERNEL_NAME_SUFFIX = re.compile(r"(ScaledMM)?(Linear)?(Kernel|Method)$")
 _NO_RANGE = nullcontext()
 
 
@@ -50,7 +54,30 @@ def classify_phase(is_prefilling: np.ndarray) -> str:
     return "Mixed" if is_prefilling.any() else "Decode"
 
 
-def no_step_range(batch_req_state: "BatchReqState | None") -> AbstractContextManager:
+def linear_kernel_name(layer: nn.Module) -> str | None:
+    """Name the kernel running a vLLM linear layer, or None for other modules."""
+    method = getattr(layer, "quant_method", None)
+    if method is None or not hasattr(layer, "weight"):
+        return None
+    holder = getattr(layer, "scheme", None) or method
+    kernel = getattr(holder, "fp8_linear", None) or getattr(holder, "kernel", holder)
+    return _KERNEL_NAME_SUFFIX.sub("", type(kernel).__name__)
+
+
+def describe_run(model: nn.Module) -> str:
+    """Describe what every step of this model runs on, for the Step/* labels."""
+    major, minor = torch.cuda.get_device_capability()
+    device = torch.cuda.get_device_name().replace(" ", "_")
+    kernels = Counter(
+        name for m in model.modules() if (name := linear_kernel_name(m)) is not None
+    )
+    linear = ",".join(f"{name}*{n}" for name, n in kernels.most_common())
+    return f"hw={device}/sm_{major}{minor} linear={linear}"
+
+
+def no_step_range(
+    batch_req_state: "BatchReqState | None", cudagraph: bool = False
+) -> AbstractContextManager:
     return _NO_RANGE
 
 
@@ -62,17 +89,26 @@ class _PhaseRanges:
     It is None outside a real step, so dummy runs emit no ranges.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, run_description: str) -> None:
         self.phase: str | None = None
-        self.step_labels = {phase: f"Step/{phase}" for phase in _PHASES}
+        self.run_description = run_description
+        self.step_index = 0
 
     @contextmanager
-    def step(self, batch_req_state: "BatchReqState | None") -> Iterator[None]:
+    def step(
+        self, batch_req_state: "BatchReqState | None", cudagraph: bool = False
+    ) -> Iterator[None]:
         if batch_req_state is None:
             yield
             return
         self.phase = classify_phase(batch_req_state.is_prefilling_np)
-        nvtx.range_push(self.step_labels[self.phase])
+        self.step_index += 1
+        nvtx.range_push(
+            f"Step/{self.phase} #{self.step_index} "
+            f"reqs={len(batch_req_state.req_ids)} "
+            f"tokens={batch_req_state.num_tokens} cudagraph={int(cudagraph)} "
+            f"{self.run_description}"
+        )
         try:
             yield
         finally:
@@ -108,7 +144,7 @@ def install_nvtx_ranges(
     if not NVTX_ENABLED:
         return no_step_range
 
-    ranges = _PhaseRanges()
+    ranges = _PhaseRanges(describe_run(model))
     if (
         compilation_config.mode != CompilationMode.NONE
         or compilation_config.cudagraph_mode != CUDAGraphMode.NONE
@@ -128,10 +164,17 @@ def install_nvtx_ranges(
         for attr, range_name in _RANGE_NAMES.items():
             submodule = getattr(layer, attr, None)
             if isinstance(submodule, nn.Module):
-                ranges.wrap_forward(
-                    submodule, f"Layer_{int(match[1]):02d}/{range_name}"
-                )
+                label = f"Layer_{int(match[1]):02d}/{range_name}"
+                ranges.wrap_forward(submodule, label)
                 num_wrapped += 1
+                for child_name, child in submodule.named_children():
+                    if (kernel := linear_kernel_name(child)) is None:
+                        continue
+                    shape = "x".join(map(str, child.weight.shape))
+                    ranges.wrap_forward(
+                        child, f"{label}/{child_name} kernel={kernel} shape={shape}"
+                    )
+                    num_wrapped += 1
 
     if num_wrapped:
         logger.info("VLLM_NVTX_ENABLE=1: added NVTX ranges to %d modules", num_wrapped)

@@ -282,19 +282,20 @@ With `--profile`, vLLM will capture a profile for each run of `vllm bench serve`
 
 Set `VLLM_NVTX_ENABLE=1` to label each model forward with what vLLM actually scheduled:
 
-- `Step/Prefill`, `Step/Decode` and `Step/Mixed` around the model forward.
+- `Step/Prefill`, `Step/Decode` and `Step/Mixed` around the model forward, followed by the step number, the batch, whether it replayed a CUDA graph, the hardware and the linear kernels with their layer counts, for example `Step/Prefill #12 reqs=8 tokens=8192 cudagraph=0 hw=NVIDIA_GeForce_RTX_3090/sm_86 linear=CutlassInt8*144,Unquantized*1`.
 - `<phase>/Layer_NN/Attention` and `<phase>/Layer_NN/FFN` around `self_attn` and `mlp` of each decoder layer.
+- `<phase>/Layer_NN/<Attention|FFN>/<linear> kernel=<name> shape=<weight shape>` around each linear layer inside them.
 
 A step is `Prefill` when every scheduled request is still consuming its prefill tokens, including chunked prefill and requests replaying tokens after preemption, and `Decode` when none is. A batch with both is `Mixed`, since a layer runs once over all of its tokens. Warmup and dummy runs are not labelled.
 
-Per-layer ranges require `--enforce-eager`, because `torch.compile` and CUDA graph replay do not run the Python code of the layers. Without it vLLM logs a warning and emits only the `Step/*` ranges, with the compilation settings unchanged. The ranges are also only implemented in Model Runner V2.
+Per-layer and per-linear ranges require `--enforce-eager`, because `torch.compile` and CUDA graph replay do not run the Python code of the layers. Without it vLLM logs a warning and emits only the `Step/*` ranges, with the compilation settings unchanged. The ranges are also only implemented in Model Runner V2.
 
 ```bash
 VLLM_NVTX_ENABLE=1 nsys profile -t cuda,nvtx,osrt --trace-fork-before-exec=true -o qwen3_nvtx \
     vllm serve Qwen/Qwen3-0.6B --enforce-eager
 ```
 
-NVTX ranges measure CPU time. CUDA kernels run asynchronously, so use the GPU projection (`nsys stats -r nvtx_gpu_proj_sum`) for time spent on the GPU.
+NVTX ranges measure CPU time. CUDA kernels run asynchronously, so use the GPU projection (`nsys stats -r nvtx_gpu_proj_sum`) for time spent on the GPU. To see kernels inside CUDA graphs, add `--cuda-graph-trace=node` to `nsys profile`. Match labels by prefix, since the step number makes each `Step/*` label unique.
 
 #### Analysis
 

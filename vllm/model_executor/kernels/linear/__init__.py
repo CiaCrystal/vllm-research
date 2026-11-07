@@ -207,6 +207,7 @@ from vllm.model_executor.kernels.linear.scaled_mm.cutlass import (
 )
 from vllm.model_executor.kernels.linear.scaled_mm.cutlass_sparse import (
     CutlassSparseFP8ScaledMMLinearKernel,
+    CutlassSparseInt8ScaledMMLinearKernel,
 )
 from vllm.model_executor.kernels.linear.scaled_mm.deep_gemm import (
     DeepGemmFp8BlockScaledMMKernel,
@@ -296,7 +297,10 @@ _LINEAR_BACKEND_KERNEL_MAP: dict[str, set[type]] = {
         B12xNvFp4W4A16LinearKernel,
         B12xTensorFP8ScaledMMLinearKernel,
     },
-    "cutlass_sparse": {CutlassSparseFP8ScaledMMLinearKernel},
+    "cutlass_sparse": {
+        CutlassSparseFP8ScaledMMLinearKernel,
+        CutlassSparseInt8ScaledMMLinearKernel,
+    },
     "cutlass": {
         CutlassInt8ScaledMMLinearKernel,
         CutlassFP8ScaledMMLinearKernel,
@@ -454,6 +458,7 @@ _POSSIBLE_INT8_KERNELS: dict[PlatformEnum, list[type[Int8ScaledMMLinearKernel]]]
         CutlassInt8ScaledMMLinearKernel,
         TritonInt8ScaledMMLinearKernel,
         HummingInt8ScaledMMLinearKernel,
+        CutlassSparseInt8ScaledMMLinearKernel,
     ],
     PlatformEnum.ROCM: [AiterInt8ScaledMMLinearKernel, TritonInt8ScaledMMLinearKernel],
     PlatformEnum.XPU: [TritonInt8ScaledMMLinearKernel],

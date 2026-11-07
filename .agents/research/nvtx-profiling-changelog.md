@@ -10,7 +10,7 @@
 | ---- | ---- |
 | 分支 | `research/nvtx-profiling` |
 | 基线提交 | `d038985573`（Ignore local profiling artifacts） |
-| 提交状态 | CHG-010 及之前由用户提交并 push（`5177252a24`）。CHG-011 未提交 |
+| 提交状态 | CHG-011 及之前由用户提交并 push（`e26b649a68`）。CHG-012、CHG-013 由用户要求提交，未 push |
 | 审阅状态 | 用户已于 2026-11-06 接受 CHG-001 至 CHG-004 |
 | 功能 | `VLLM_NVTX_ENABLE=1` 时输出 `Step/{Prefill,Decode,Mixed}` 和 `{阶段}/Layer_NN/{Attention,FFN}` |
 | 已验证模型 | Qwen3-0.6B（28 层），`Qwen/Qwen3-0.6B`，已在本地 HF 缓存 |
@@ -106,6 +106,15 @@ export LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/lib/wsl/drivers/nv_dispi.inf_amd64_
 44. **`FP8ScaledMMLinearKernel.apply_weights` 用 `w.shape[1]` 推输出宽度。** 换权重布局的 kernel 不能直接用它给的 `output_shape`。
 45. **生成多份完整 checkpoint 时不要把浮点权重留在内存里。** 5 份 float32 的线性层权重加 Hessian 超过 15 GB，进程被杀，日志没有报错，只是最后一行停住。生成时就压成 1 字节。
 46. **会话临时目录跨天会被清空。** 这次的脚本都没了。要保留的脚本放到 `/home/bca/models/obr/scripts/`。
+47. **`quant_method` 不只在线性层上。** Qwen3 的 `Attention` 模块也有这个属性，但没有 `weight`。按 `quant_method` 找线性层时要同时判断 `weight`，否则 eager 下启动就抛 `AttributeError`。
+48. **SM80 的 2:4 元数据有行重排，CUTLASS 只提了一句。** 每个 uint32 存 8 组、每组 4 位、低位在前，但内存位置是 `word = (w//2)*2M + (m//16)*32 + (m%8)*4 + (m%16)//8 + (w%2)*2`（`w = g//8`）。这是在 3090 上逐 nibble 扫描测出来的，2048 项一一对应。全相同的掩码在错误布局下也算得对，只有随机掩码能暴露问题，症状是相对误差约 1.07。
+49. **SM80 稀疏 GEMM 的 N 必须对齐。** N=1、17 实测使设备出错，之后的 cuBLAS 调用才报 `CUBLAS_STATUS_ALLOC_FAILED` 或 `EXECUTION_FAILED`，看起来像 cuBLAS 的问题。kernel 里把 N 补到 16 的倍数再裁掉。另外 M 要被 16 整除、K 要被 128 整除。
+50. **SM80 稀疏 GEMM 的 D 只能行主序。** 输出是 `[M, N]`，要转置成 `[N, M]`。这次转置约占稀疏 GEMM 时间的 49%，足以抵消全部提速。不要只看 GEMM kernel 就下结论。
+51. **稀疏 MMA 要求 Warp 层的 k 是指令 k 的偶数倍。** 指令是 k64，所以 `WarpShape` 的 k 要 128，Tile 的 k 也至少 128。include 顺序也要和 `scaled_mm_c2x.cuh` 一致，否则 `visitors.hpp` 报 `gemm is not a type name`。
+52. **服务器上的基线只在暂存区时，不要跑 `git checkout -- .`。** 它把工作区恢复成基线，撤销所有补丁。要重放的话先删掉补丁新增的文件。
+53. **远程命令里不要用裸的 `pkill -f <命令片段>`。** 它会匹配到当前 shell 自己的命令行，把连接或脚本一起杀掉。用 `[v]llm` 这种写法，或把命令写进脚本再触发。
+54. **`hf download --revision <sha>` 不写 `refs/main`。** 之后 `HF_HUB_OFFLINE=1` 用模型名启动会报 `LocalEntryNotFoundError`。手动写入 `refs/main`。
+55. **这台租用机（gpuhome.cc）的网络特点。** 本机到服务器上行只有约 3KB/s，不能传大文件或本地下载模型再上传。GitHub 直连约 30KB/s，`gh-proxy.com` 约 2.8MB/s。`hf-mirror.com` 单文件有时只有 1MB/s 以下，ModelScope 单连接约 1.2MB/s，16 路并行约 8MB/s。第三方来源的代码要比对 Git tree hash，模型要比对 LFS sha256。
 
 ## 设计决定
 
@@ -316,6 +325,41 @@ export LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/lib/wsl/drivers/nv_dispi.inf_amd64_
   - 端到端：`Selected CutlassSparseFP8ScaledMMLinearKernel`，GSM8K 1.67%（同一 checkpoint 的稠密 kernel 1.36%）。
   - 未验证：加载后的实际显存；E2M1、FP6；其他 GPU；A 上 TTFT 下降的原因；论文的 5.9 倍；OBR 官方实现的对照。`ruff`、`pre-commit`、`pytest` 仍未运行，没有写仓库测试。
 - 状态：未提交
+
+### CHG-012：NVTX 标签加入步序号、批信息、硬件和线性 kernel
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：`vllm/utils/nvtx_phase_ranges.py`、`vllm/v1/worker/gpu/model_runner.py`、`docs/contributing/profiling.md`、本文件。
+- 内容：
+  - `Step/<phase>` 后面加 `#<步序号> reqs= tokens= cudagraph= hw= linear=`，非 eager 也有。
+  - eager 下新增 `<phase>/Layer_NN/<Attention|FFN>/<线性层> kernel= shape=`。`shape` 是加载后存储的权重形状，FP8 是 `[K, N]`，稀疏 kernel 压缩后 K 减半。
+  - 「不要重新踩的坑」新增第 47 条。修正「当前状态」的提交状态：CHG-011 已随 `e26b649a68` 提交。
+- 原因：用户要求 3090 实验直接在 vLLM 内测量，标签带上 step、hw、kernel。
+- 影响：`Step/*` 标签现在每步唯一，统计要按前缀匹配，不能等值匹配。这之后的 trace 不能直接套用旧的 `label = 'Step/Prefill'` 查询。
+- 验证：
+  - 本地 RTX 5070 + nsys，Qwen3-0.6B。非 eager 的 bf16：5 个 Step，`cudagraph` 为 Prefill 0、Decode 1。eager 的 `fp8_seq_none`：`linear=CutlassFP8*112,UnquantizedEmbedding*2`，6 类标签各 140 条（28 层 × 5 步），生成 token 数正确。
+  - 未验证：RTX 3090 上的标签；`vllm bench forward` 是否带这些标签；开启后的开销（新标签每步多一次字符串格式化）；多 GPU。`ruff`、`pre-commit`、`pytest` 未运行，没有写仓库测试。
+- 状态：已提交，未 push
+
+### CHG-013：新增 SM86 的 2:4 稀疏 INT8 kernel，并在 RTX 3090 上用 vLLM 测速
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：`csrc/quantization/w8a8/cutlass/sparse_int8_mm_sm80.cu`（新增）、`tools/build_sparse_int8_sm80.sh`（新增）、`vllm/model_executor/kernels/linear/scaled_mm/cutlass_sparse.py`、`vllm/model_executor/kernels/linear/__init__.py`、`vllm/config/kernel.py`、本文件。结果在 `profiles/nsys/phase_cost/quant/obr_3090/forward/`。
+- 内容：
+  - `--linear-backend cutlass_sparse` 在 SM86 上选 `CutlassSparseInt8ScaledMMLinearKernel`，放在 `_POSSIBLE_INT8_KERNELS` 末尾，默认路径不变。要求动态对称激活，M 被 16、K 被 128 整除，非 2:4 权重加载时报错。
+  - 「不要重新踩的坑」新增第 48 至 55 条。
+  - 用户把计划改成全部在 vLLM 内测量：取消仓库外微基准，改用 `vllm bench forward --profile-dir`。OBR checkpoint 的生成仍要在 vLLM 外。
+- 原因：用户要求在 RTX 3090 上验证 OBR 的 2:4 kernel。
+- 结果（Qwen3-8B，`vllm bench forward`，200 次回放中位数，2:4 无补偿 checkpoint）：
+  - ≥1024 token：稀疏 GEMM 相对稠密 INT8 快 1.39～1.42 倍，加上输出转置后为 0.95～0.99 倍，整个前向 0.97～0.99 倍。**未达到 1.3 倍的通过标准。**
+  - 256 token 及以下，线性部分 1.06～1.39 倍，Decode 的 d1、d8 为 1.24、1.19 倍，整个前向 1.16、1.11 倍。
+  - 相对 bf16，8192 token：稠密 INT8 GEMM 快 2.9 倍，稀疏 GEMM 4.2 倍，加转置 2.8 倍。
+  - 权重零值不影响稠密 kernel：`int8` 和 `int8_24` 的差异约 1.2%。
+- 验证：
+  - 数值：5 种真实形状 × 9 种 N 加单值 scale，和浮点参考的相对误差约 0.17%。元数据映射公式和实测表 2048 项全部一致。
+  - 端到端：`Selected CutlassSparseInt8ScaledMMLinearKernel`，bench 的 `finite` 和 `graph_deterministic` 为真。
+  - 未验证：真实权重下稀疏和稠密 kernel 的输出是否一致；`vllm serve` 下的稀疏路线；INT4；OBR；GSM8K；端到端 TTFT、TPOT。`ruff`、`pre-commit`、`pytest` 未运行，没有写仓库测试。
+- 状态：已提交，未 push
 
 ## 验证结果
 

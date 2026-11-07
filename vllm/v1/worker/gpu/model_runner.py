@@ -2124,7 +2124,9 @@ class GPUModelRunner(LoRAModelRunnerMixin):
         self.step_timing.forward_start()
 
         # Run model.
-        with self.nvtx_step_range(batch_req_state):
+        with self.nvtx_step_range(
+            batch_req_state, batch_desc.cg_mode == CUDAGraphMode.FULL
+        ):
             if batch_desc.cg_mode == CUDAGraphMode.FULL:
                 # Use explicit cudagraph replay for FULL mode.
                 # NOTE(woosuk): Here, we don't need to pass the input tensors,

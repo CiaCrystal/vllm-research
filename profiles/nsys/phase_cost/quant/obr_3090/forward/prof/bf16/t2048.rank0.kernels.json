@@ -1,0 +1,87 @@
+{
+ "trace": "/root/rivermind-data/prof/bf16/t2048.rank0.trace.json.gz",
+ "replays": 3,
+ "span_us": 445060.65,
+ "busy_us": 444843.97,
+ "pre_forward_us": 765.67,
+ "activities": 507,
+ "kernels": [
+  {
+   "name": "cutlass::Kernel2",
+   "us": 347433.65,
+   "pct": 78.2,
+   "calls": 108,
+   "example": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x256_32x3_tn_align8>(cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x256_32x3_tn_align8::Params)"
+  },
+  {
+   "name": "ampere_bf16_s16816gemm_bf16_256x128_ldg8_f2f_stages_32x3_tn",
+   "us": 53575.72,
+   "pct": 12.06,
+   "calls": 36,
+   "example": "ampere_bf16_s16816gemm_bf16_256x128_ldg8_f2f_stages_32x3_tn"
+  },
+  {
+   "name": "flash::flash_fwd_splitkv_kernel",
+   "us": 24541.17,
+   "pct": 5.52,
+   "calls": 36,
+   "example": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 128, 4, cutlass::bfloat16_t> >, true, false, false, false, true, false, false, false>(flash::Flash_fwd_params)"
+  },
+  {
+   "name": "vllm::act_and_mul_kernel",
+   "us": 6500.78,
+   "pct": 1.46,
+   "calls": 36,
+   "example": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, "
+  },
+  {
+   "name": "vllm::fused_add_rms_norm_kernel",
+   "us": 5832.08,
+   "pct": 1.31,
+   "calls": 72,
+   "example": "std::enable_if<(((8)>(0)))&&vllm::_typeConvert<c10::BFloat16>::exists, void>::type vllm::fused_add_rms_norm_kernel<c10::BFloat16, 8, true>(c10::BFloat16*, long, c10::BFloat16*, c10::BFloat16 const*, float, int, int, long)"
+  },
+  {
+   "name": "vllm::rms_norm_kernel",
+   "us": 3224.76,
+   "pct": 0.73,
+   "calls": 73,
+   "example": "void vllm::rms_norm_kernel<c10::BFloat16, 8, 2, true>(c10::BFloat16*, c10::BFloat16 const*, long, long, long, long, long, c10::BFloat16 const*, long, float, int, int)"
+  },
+  {
+   "name": "vllm::rotary_embedding_kernel",
+   "us": 2167.62,
+   "pct": 0.49,
+   "calls": 36,
+   "example": "void vllm::rotary_embedding_kernel<c10::BFloat16, c10::BFloat16, true>(long const*, c10::BFloat16*, c10::BFloat16*, c10::BFloat16 const*, int, long, long, long, int, int, int, long, bool)"
+  },
+  {
+   "name": "vllm::reshape_and_cache_flash_kernel",
+   "us": 837.33,
+   "pct": 0.19,
+   "calls": 36,
+   "example": "void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16, (vllm::Fp8KVCacheDataType)0>(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, long const*, long, long, long, long, long, int, int, int, float const*, float const*, int)"
+  },
+  {
+   "name": "Memset (Unknown)",
+   "us": 108.3,
+   "pct": 0.02,
+   "calls": 72,
+   "example": "Memset (Unknown)"
+  },
+  {
+   "name": "at::native::vectorized_gather_kernel",
+   "us": 42.23,
+   "pct": 0.01,
+   "calls": 1,
+   "example": "void at::native::vectorized_gather_kernel<16, long>(char*, char*, long*, int, long, long, long, long, bool)"
+  },
+  {
+   "name": "at::native::unrolled_elementwise_kernel",
+   "us": 3.11,
+   "pct": 0.0,
+   "calls": 1,
+   "example": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#4}::operator()() const::{lambda(long)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned in"
+  }
+ ]
+}
