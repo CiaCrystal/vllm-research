@@ -145,7 +145,7 @@ def _sparse_int8_mm_func(
         x = torch.nn.functional.pad(x, (0, 0, 0, padding))
         if x_scale.numel() != 1:
             x_scale = torch.nn.functional.pad(x_scale.reshape(-1), (0, padding))
-    out = torch.empty((M, N + padding), dtype=torch.bfloat16, device=x.device)
+    out = torch.empty((N + padding, M), dtype=torch.bfloat16, device=x.device)
     status = _sparse_int8_lib().vllm_sparse_int8_mm_sm80(
         torch.cuda.current_stream().cuda_stream,
         out.data_ptr(),
@@ -161,7 +161,7 @@ def _sparse_int8_mm_func(
     )
     if status != 0:
         raise RuntimeError(f"vllm_sparse_int8_mm_sm80 failed with status {status}.")
-    return out[:, :N].t().contiguous()
+    return out[:N]
 
 
 def _sparse_int8_mm_fake(

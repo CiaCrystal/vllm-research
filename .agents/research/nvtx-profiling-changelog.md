@@ -10,11 +10,11 @@
 | ---- | ---- |
 | 分支 | `research/nvtx-profiling` |
 | 基线提交 | `d038985573`（Ignore local profiling artifacts） |
-| 提交状态 | CHG-011 及之前由用户提交并 push（`e26b649a68`）。CHG-012、CHG-013 由用户要求提交，未 push |
+| 提交状态 | CHG-011 及之前由用户提交并 push（`e26b649a68`）。CHG-012 至 CHG-016 由用户要求提交并 push |
 | 审阅状态 | 用户已于 2026-11-06 接受 CHG-001 至 CHG-004 |
 | 功能 | `VLLM_NVTX_ENABLE=1` 时输出 `Step/{Prefill,Decode,Mixed}` 和 `{阶段}/Layer_NN/{Attention,FFN}` |
 | 已验证模型 | Qwen3-0.6B（28 层），`Qwen/Qwen3-0.6B`，已在本地 HF 缓存 |
-| 最近一次测量 | 2026-11-06，eager 见 CHG-006，非 eager 基线和量化可行性见 CHG-007，量化对比见 CHG-008，TTFT 和 TPOT 见 CHG-009，OBR 可行性见 CHG-010，OBR 精度和稀疏 kernel 见 CHG-011。报告在 `profiles/nsys/phase_cost/report.md`、`profiles/nsys/phase_cost/noneager/report.md`、`profiles/nsys/phase_cost/quant/report.md` 和 `profiles/nsys/phase_cost/quant/sparsity/report.md` |
+| 最近一次测量 | 2026-11-06，eager 见 CHG-006，非 eager 基线和量化可行性见 CHG-007，量化对比见 CHG-008，TTFT 和 TPOT 见 CHG-009，OBR 可行性见 CHG-010，OBR 精度和稀疏 kernel 见 CHG-011。报告在 `profiles/nsys/phase_cost/report.md`、`profiles/nsys/phase_cost/noneager/report.md`、`profiles/nsys/phase_cost/quant/report.md` 、`profiles/nsys/phase_cost/quant/sparsity/report.md` 和 `profiles/nsys/phase_cost/quant/obr_3090/report.md` |
 
 本任务改动的文件：
 
@@ -115,6 +115,13 @@ export LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/lib/wsl/drivers/nv_dispi.inf_amd64_
 53. **远程命令里不要用裸的 `pkill -f <命令片段>`。** 它会匹配到当前 shell 自己的命令行，把连接或脚本一起杀掉。用 `[v]llm` 这种写法，或把命令写进脚本再触发。
 54. **`hf download --revision <sha>` 不写 `refs/main`。** 之后 `HF_HUB_OFFLINE=1` 用模型名启动会报 `LocalEntryNotFoundError`。手动写入 `refs/main`。
 55. **这台租用机（gpuhome.cc）的网络特点。** 本机到服务器上行只有约 3KB/s，不能传大文件或本地下载模型再上传。GitHub 直连约 30KB/s，`gh-proxy.com` 约 2.8MB/s。`hf-mirror.com` 单文件有时只有 1MB/s 以下，ModelScope 单连接约 1.2MB/s，16 路并行约 8MB/s。第三方来源的代码要比对 Git tree hash，模型要比对 LFS sha256。
+56. **按列主序直接写输出不等于省掉转置开销。** 自定义 store 让 8192 token 的 GEMM 从 370 ms 涨到 490 ms。每个线程持有的 4 个元素在 n 方向，列主序下相隔 M，只能逐元素写，写入无法合并。它比“GEMM + torch 转置”的 552 ms 好，但仍达不到 1.3 倍。
+57. **Qwen3-8B 上 2:4 比 0.6B 更不可用。** 稠密 INT8 的 GSM8K 是 88.25%，INT8 + 2:4 不管有没有 OBR 都只有 1%～2%。0.6B 的低基线没有掩盖什么，崩溃是一样的。
+58. **8B 上 OBR 的困惑度比无补偿更差，原因未查明。** 1749 对 748，而单层目标函数确实下降了。不要直接引用这个 OBR 结果代表论文方法。困惑度只有 bf16 和 INT8 路线有可信的参照。
+59. **8B 的 OBR 用批量 PCG 只要 22 分钟。** 单块 36 秒，Cholesky 外推约 5 小时。`down_proj` 的 Hessian 是 604MB，单卡够用。
+60. **困惑度可以直接在 `vllm serve` 里算。** `/v1/completions` 带 `prompt_logprobs: 0`、`max_tokens: 1`，第一项是 None 要跳过。`--max-model-len 2048` 时每段最多 2047 token。这条路径带激活量化，和 HF 浮点激活的旧数据不是同一口径。
+61. **更正第 57、58 条：8B 的 OBR 第一版有符号错误。** 剪掉部分的误差应为 `-w`，写成了 `+w`，补偿方向相反。修复后 INT8 + 2:4 + OBR 的 GSM8K 是 44.43%，困惑度 11.97，不是 1%～2%。和直接解对比目标函数检查不出这种错，因为两边用的是同一个误差向量。要用“补偿后误差 < 只剪枝误差”来断言。
+62. **查这类问题先比校准集上的层输出误差。** 校准集上比无补偿还差，就是实现错，不用再怀疑过拟合或激活量化。脚本在 `profiles/nsys/phase_cost/quant/obr_3090/scripts/obr_diag.py`。
 
 ## 设计决定
 
@@ -339,7 +346,7 @@ export LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/lib/wsl/drivers/nv_dispi.inf_amd64_
 - 验证：
   - 本地 RTX 5070 + nsys，Qwen3-0.6B。非 eager 的 bf16：5 个 Step，`cudagraph` 为 Prefill 0、Decode 1。eager 的 `fp8_seq_none`：`linear=CutlassFP8*112,UnquantizedEmbedding*2`，6 类标签各 140 条（28 层 × 5 步），生成 token 数正确。
   - 未验证：RTX 3090 上的标签；`vllm bench forward` 是否带这些标签；开启后的开销（新标签每步多一次字符串格式化）；多 GPU。`ruff`、`pre-commit`、`pytest` 未运行，没有写仓库测试。
-- 状态：已提交，未 push
+- 状态：已提交并 push
 
 ### CHG-013：新增 SM86 的 2:4 稀疏 INT8 kernel，并在 RTX 3090 上用 vLLM 测速
 
@@ -359,7 +366,62 @@ export LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/lib/wsl/drivers/nv_dispi.inf_amd64_
   - 数值：5 种真实形状 × 9 种 N 加单值 scale，和浮点参考的相对误差约 0.17%。元数据映射公式和实测表 2048 项全部一致。
   - 端到端：`Selected CutlassSparseInt8ScaledMMLinearKernel`，bench 的 `finite` 和 `graph_deterministic` 为真。
   - 未验证：真实权重下稀疏和稠密 kernel 的输出是否一致；`vllm serve` 下的稀疏路线；INT4；OBR；GSM8K；端到端 TTFT、TPOT。`ruff`、`pre-commit`、`pytest` 未运行，没有写仓库测试。
-- 状态：已提交，未 push
+- 状态：已提交并 push
+
+### CHG-014：把输出转置融合进 SM86 稀疏 INT8 kernel
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：`csrc/quantization/w8a8/cutlass/sparse_int8_mm_sm80.cu`、`vllm/model_executor/kernels/linear/scaled_mm/cutlass_sparse.py`、本文件。结果在 `profiles/nsys/phase_cost/quant/obr_3090/forward/`（`sparse_col.json`、`summary_col.txt`）。
+- 内容：
+  - 新增 `ColumnMajorStore`，kernel 直接写 `[N, M]`，不再调用 torch 转置，补齐后的裁剪也只是视图。
+  - 「不要重新踩的坑」新增第 56 条。
+  - 用户要求以后每组合只测 3 次。本次重测 `--iters 3 --samples 1`，kernel 分解同样是 3 次回放。
+- 原因：用户要求把转置融合进 kernel。
+- 结果（对比 `int8_24`，同一 checkpoint；稠密数据是之前 200 次的中位数）：
+  - ≥1024 token：线性部分 1.02～1.08 倍，整个前向 1.02～1.05 倍。**仍未达到 1.3 倍。**
+  - t8192：GEMM 489.99 ms，稠密 527.14 ms，上一版 GEMM + 转置 552.55 ms。
+  - t64 线性 1.42 倍，t1、t8 为 1.27、1.25 倍，d1、d8 为 1.26、1.23 倍，整个前向 1.13～1.35 倍。
+- 验证：
+  - 5 种形状 × 7 种 N 加单值 scale，失败 0，相对误差约 0.17%。
+  - 未验证：真实权重下和稠密 kernel 的输出是否一致；`vllm serve`；端到端。只有 3 次回放，小差异不能下结论。`ruff`、`pre-commit`、`pytest` 未运行。
+- 状态：已提交并 push
+
+### CHG-015：Qwen3-8B 的 OBR 精度和端到端测量（RTX 3090）
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：`profiles/nsys/phase_cost/quant/obr_3090/`（`report.md`、`eval/`、`scripts/`、`logs/`）、本文件。vLLM 源码未改动。
+- 内容：
+  - OBR 脚本放在 `scripts/obr_8b.py`：模型在 CPU，逐块上 GPU，批量 PCG，每块一个分片，可续跑。续跑逻辑未实测。
+  - 评测放在 `scripts/eval_route.py`：一次 `vllm serve` 内依次测 A、D、F（每组合 3 次）、困惑度和 GSM8K。
+  - 「不要重新踩的坑」新增第 57 至 60 条。
+- 原因：用户要求回答 8B 上 2:4 + OBR 的 GSM8K 能保住多少。
+- 结果：
+  - GSM8K：bf16 88.55%，INT8 稠密 88.25%，无补偿 1.82%，INT8 OBR 0.83%（稀疏 kernel 1.52%），INT4 OBR 1.67%。
+  - 困惑度：bf16 9.14，INT8 9.13，无补偿 748，INT8 OBR 1749（稀疏 kernel 1797），INT4 OBR 5321。
+  - 稀疏 vs 稠密 kernel，同一 checkpoint，整体耗时 1.07～1.15 倍，TPOT 1.10～1.16 倍。稠密 INT8 vs bf16 整体 1.65～2.01 倍。
+  - 未达到精度通过标准，也未达到 1.3 倍速度标准。
+- 验证：
+  - 六条路线都跑完，`Selected` 日志确认了 kernel。A、D、F 的 usage 断言通过。
+  - 未验证：OBR 困惑度比无补偿更差的原因；真实权重下稀疏和稠密 kernel 的逐位一致性；60 次迭代下 PCG 和精确解的差距；手写逐块前向和 HF 整体前向相差 1.58% 的原因。`ruff`、`pre-commit`、`pytest` 未运行。
+- 状态：已提交并 push
+
+### CHG-016：修复 8B OBR 的符号错误，更正 CHG-015 的精度结论
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：`profiles/nsys/phase_cost/quant/obr_3090/`（`report.md`、`eval/`、`eval_signbug/`、`scripts/obr_8b.py`、`scripts/obr_diag.py`、`scripts/decode_ckpt.py`、`logs/`）、本文件。vLLM 源码未改动。
+- 内容：
+  - `obr_8b.py` 第一步补偿的误差从 `w * (1 - mask)` 改为 `-w * (1 - mask)`。`--check` 增加真实误差断言。
+  - 更正 CHG-015 和坑 57、58：它们的 OBR 结论作废。符号错误版本的结果移到 `eval_signbug/`。
+  - 「不要重新踩的坑」新增第 61、62 条。
+- 原因：用户要求查明 OBR 困惑度比无补偿更差的原因。
+- 结果：
+  - 修复后 GSM8K：INT8 + 2:4 + OBR 44.43%（稀疏 kernel 45.49%），INT4 + 2:4 + OBR 19.56%。困惑度 11.97、11.99、14.14。
+  - 仍未达到“相对 bf16 下降不超过 5 个百分点”。
+  - 稀疏 kernel 在真实权重上和稠密 kernel 一致。
+- 验证：
+  - 第 1 块逐层断言通过，补偿后误差是只剪枝的 23%～44%。36 块和 3 条评测都跑完。
+  - 未验证：修复后的端到端测时（速度和权重数值无关，沿用之前的数据）；60 次迭代下 PCG 和精确解的差距。`ruff`、`pre-commit`、`pytest` 未运行。
+- 状态：已提交并 push
 
 ## 验证结果
 

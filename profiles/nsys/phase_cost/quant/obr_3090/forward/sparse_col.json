@@ -1,0 +1,1212 @@
+[
+  {
+    "case": "t1",
+    "requests": [
+      {
+        "query_len": 1,
+        "kv_len": 1,
+        "num_draft_tokens": 0,
+        "chunked": false
+      }
+    ],
+    "median_us": 8930.3037109375,
+    "ranks": [
+      {
+        "num_tokens": 1,
+        "kv_blocks": 2,
+        "routing": "real",
+        "num_local_tokens": 1,
+        "num_tokens_after_padding": 1,
+        "batch_order": [
+          "bench-0"
+        ],
+        "timing_scope": "target_only",
+        "eager_repeat": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_vs_eager": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_deterministic": true,
+        "finite": true,
+        "state_reset_bytes": 2359296,
+        "latency_us": {
+          "timer": "graph_events",
+          "median": 8930.3037109375,
+          "sample_spread_pct": 0.0,
+          "mean": 8929.2802734375,
+          "std": 1.4482800960540771,
+          "min": 8927.2314453125,
+          "p90": 8930.3037109375,
+          "count": 3,
+          "samples_us": [
+            8930.3,
+            8927.23,
+            8930.3
+          ]
+        },
+        "profile": {
+          "summary": "/root/rivermind-data/prof/sparse_col/t1.rank0.kernels.json",
+          "span_us": 8992.7,
+          "busy_us": 8965.59,
+          "activities": 903,
+          "top_kernels": [
+            {
+              "name": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLinearShapeILi64ELi128EEELi128ENSG_ILi4ELi8EEELi16EEENS_5ArrayIaLi16ELb0EEELb0ENSD_9NoPermuteEEENS9_25RegularTileAccessIteratorISC_aNSD_37RowMajorTensorOpMultiplicandCrosswiseILi8ELi64EEELi0ESJ_Li16EEELNS_4arch14CacheOperation4KindE1ENSA_INSB_ILi128ELi128EEEaNSD_11ColumnMajorELi0ENSF_INSG_ILi128ELi128EEELi128ENSG_ILi8ELi4EEELi16EEESL_Lb0ESM_EENSO_ISV_aNSD_40ColumnMajorTensorOpMultiplicandCrosswiseILi8ELi128EEELi1ESZ_Li16EEELSU_1EiSE_NSA_INSB_ILi128ELi4EEEjNSD_22ColumnMajorInterleavedILi2EEELi1ENS8_30PitchLinearStripminedThreadMapINSG_ILi256ELi2EEELi128ELi4EEENSK_IjLi4ELb1EEELb0ESM_EENSO_INSB_ILi256ELi2EEEjSW_Li0ES19_Li16EEELSU_1ENS4_15SparseMmaPolicyINS1_4warp17SparseMmaTensorOpINS6_ILi64ELi64ELi128EEEaSQ_aS12_iSE_NS1F_17MmaTensorOpPolicyINSS_9SparseMmaINS6_ILi16ELi8ELi64EEELi32EaSE_aSW_iSE_NSS_21OpMultiplyAddSaturateELNSS_12SPFormatType4KindE0EEENSB_ILi1ELi1EEEEELi1ELb0EbEENSB_ILi0ELi0EEES1S_S1S_Li1EEELi3EbEENS_8epilogue11threadblock28EpilogueWithVisitorCallbacksINS1W_8EpilogueIS7_S1R_Li1ENS1W_22PredicatedTileIteratorINS1W_26OutputTileOptimalThreadMapINS1W_15OutputTileShapeILi128ELi8ELi2ELi1ELi1EEENS21_ILi1ELi8ELi1ELi1ELi8EEELi128ELi4ELi32EEEfLb0ESM_Lb0EEENS1V_4warp24FragmentIteratorTensorOpIS1H_S1K_iNSK_IiLi4ELb1EEESE_EENS26_20TileIteratorTensorOpIS1H_S1K_iSE_EENS1W_18SharedLoadIteratorINS24_18CompactedThreadMapEiLi16EEENS1V_6thread17LinearCombinationIfLi4EiiLNS2F_9ScaleType4KindE0ELNS_15FloatRoundStyleE2EfEENSB_ILi0ELi8EEELi1ELi1EEENS1W_13TreeVisitor2xIN55_GLOBAL__N__4b49866d_22_sparse_int8_mm_sm80_cu_447278ce16ColumnMajorStoreINS1W_22OutputTileThreadLayoutIS7_S1H_fLi4ELi1EEENS_10bfloat16_tEN4cute5tupleIJNS2T_1CILi1EEElNS2V_ILi0EEEEEEEEJNS2N_INS1W_14VisitorComputeINS_10multipliesES2S_fLS2J_2EvEEJNS1W_27VisitorColOrScalarBroadcastIS2R_fNS2U_IJS2W_S2X_S2X_EEEEENS2N_INS30_IS31_ffLS2J_2EvEEJNS1W_27VisitorRowOrScalarBroadcastIS2R_fNS2U_IJS2X_S2W_S2X_EEEEENS1W_15VisitorAccFetchEEEEEEEEEELi1ELi1EEENS4_30GemmIdentityThreadblockSwizzleILi1EEEEEEEvNT_6ParamsE",
+              "us": 7493.24,
+              "pct": 83.58,
+              "calls": 144,
+              "example": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLi"
+            },
+            {
+              "name": "vllm::dynamic_scaled_int8_quant_kernel",
+              "us": 293.35,
+              "pct": 3.27,
+              "calls": 144,
+              "example": "void vllm::dynamic_scaled_int8_quant_kernel<c10::BFloat16, float>(c10::BFloat16 const*, signed char*, float*, int)"
+            },
+            {
+              "name": "flash::flash_fwd_splitkv_kernel",
+              "us": 194.59,
+              "pct": 2.17,
+              "calls": 36,
+              "example": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<128, 64, 64, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 64, 4, cutlass::bfloat16_t> >, false, false, false, false, true, false, false, false>(flash::Flash_fwd_params)"
+            },
+            {
+              "name": "memcpy32_post",
+              "us": 186.8,
+              "pct": 2.08,
+              "calls": 180,
+              "example": "memcpy32_post"
+            },
+            {
+              "name": "vllm::fused_add_rms_norm_kernel",
+              "us": 181.76,
+              "pct": 2.03,
+              "calls": 72,
+              "example": "std::enable_if<(((8)>(0)))&&vllm::_typeConvert<c10::BFloat16>::exists, void>::type vllm::fused_add_rms_norm_kernel<c10::BFloat16, 8, true>(c10::BFloat16*, long, c10::BFloat16*, c10::BFloat16 const*, float, int, int, long)"
+            },
+            {
+              "name": "vllm::act_and_mul_kernel",
+              "us": 155.71,
+              "pct": 1.74,
+              "calls": 36,
+              "example": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, "
+            },
+            {
+              "name": "vllm::rms_norm_kernel",
+              "us": 138.2,
+              "pct": 1.54,
+              "calls": 73,
+              "example": "void vllm::rms_norm_kernel<c10::BFloat16, 8, 2, true>(c10::BFloat16*, c10::BFloat16 const*, long, long, long, long, long, c10::BFloat16 const*, long, float, int, int)"
+            },
+            {
+              "name": "at::native::vectorized_elementwise_kernel",
+              "us": 137.37,
+              "pct": 1.53,
+              "calls": 144,
+              "example": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<signed char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<signed char>, std::array<char*, 1ul>)"
+            },
+            {
+              "name": "vllm::rotary_embedding_kernel",
+              "us": 103.6,
+              "pct": 1.16,
+              "calls": 36,
+              "example": "void vllm::rotary_embedding_kernel<c10::BFloat16, c10::BFloat16, true>(long const*, c10::BFloat16*, c10::BFloat16*, c10::BFloat16 const*, int, long, long, long, int, int, int, long, bool)"
+            },
+            {
+              "name": "vllm::reshape_and_cache_flash_kernel",
+              "us": 75.64,
+              "pct": 0.84,
+              "calls": 36,
+              "example": "void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16, (vllm::Fp8KVCacheDataType)0>(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, long const*, long, long, long, long, long, int, int, int, float const*, float const*, int)"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "case": "t8",
+    "requests": [
+      {
+        "query_len": 8,
+        "kv_len": 8,
+        "num_draft_tokens": 0,
+        "chunked": false
+      }
+    ],
+    "median_us": 9900.5439453125,
+    "ranks": [
+      {
+        "num_tokens": 8,
+        "kv_blocks": 2,
+        "routing": "real",
+        "num_local_tokens": 8,
+        "num_tokens_after_padding": 8,
+        "batch_order": [
+          "bench-0"
+        ],
+        "timing_scope": "target_only",
+        "eager_repeat": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_vs_eager": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_deterministic": true,
+        "finite": true,
+        "state_reset_bytes": 2359296,
+        "latency_us": {
+          "timer": "graph_events",
+          "median": 9900.5439453125,
+          "sample_spread_pct": 0.0,
+          "mean": 9892.671875,
+          "std": 28.557022094726562,
+          "min": 9854.431640625,
+          "p90": 9918.541015625,
+          "count": 3,
+          "samples_us": [
+            9923.04,
+            9900.54,
+            9854.43
+          ]
+        },
+        "profile": {
+          "summary": "/root/rivermind-data/prof/sparse_col/t8.rank0.kernels.json",
+          "span_us": 9517.51,
+          "busy_us": 9468.87,
+          "activities": 1155,
+          "top_kernels": [
+            {
+              "name": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLinearShapeILi64ELi128EEELi128ENSG_ILi4ELi8EEELi16EEENS_5ArrayIaLi16ELb0EEELb0ENSD_9NoPermuteEEENS9_25RegularTileAccessIteratorISC_aNSD_37RowMajorTensorOpMultiplicandCrosswiseILi8ELi64EEELi0ESJ_Li16EEELNS_4arch14CacheOperation4KindE1ENSA_INSB_ILi128ELi128EEEaNSD_11ColumnMajorELi0ENSF_INSG_ILi128ELi128EEELi128ENSG_ILi8ELi4EEELi16EEESL_Lb0ESM_EENSO_ISV_aNSD_40ColumnMajorTensorOpMultiplicandCrosswiseILi8ELi128EEELi1ESZ_Li16EEELSU_1EiSE_NSA_INSB_ILi128ELi4EEEjNSD_22ColumnMajorInterleavedILi2EEELi1ENS8_30PitchLinearStripminedThreadMapINSG_ILi256ELi2EEELi128ELi4EEENSK_IjLi4ELb1EEELb0ESM_EENSO_INSB_ILi256ELi2EEEjSW_Li0ES19_Li16EEELSU_1ENS4_15SparseMmaPolicyINS1_4warp17SparseMmaTensorOpINS6_ILi64ELi64ELi128EEEaSQ_aS12_iSE_NS1F_17MmaTensorOpPolicyINSS_9SparseMmaINS6_ILi16ELi8ELi64EEELi32EaSE_aSW_iSE_NSS_21OpMultiplyAddSaturateELNSS_12SPFormatType4KindE0EEENSB_ILi1ELi1EEEEELi1ELb0EbEENSB_ILi0ELi0EEES1S_S1S_Li1EEELi3EbEENS_8epilogue11threadblock28EpilogueWithVisitorCallbacksINS1W_8EpilogueIS7_S1R_Li1ENS1W_22PredicatedTileIteratorINS1W_26OutputTileOptimalThreadMapINS1W_15OutputTileShapeILi128ELi8ELi2ELi1ELi1EEENS21_ILi1ELi8ELi1ELi1ELi8EEELi128ELi4ELi32EEEfLb0ESM_Lb0EEENS1V_4warp24FragmentIteratorTensorOpIS1H_S1K_iNSK_IiLi4ELb1EEESE_EENS26_20TileIteratorTensorOpIS1H_S1K_iSE_EENS1W_18SharedLoadIteratorINS24_18CompactedThreadMapEiLi16EEENS1V_6thread17LinearCombinationIfLi4EiiLNS2F_9ScaleType4KindE0ELNS_15FloatRoundStyleE2EfEENSB_ILi0ELi8EEELi1ELi1EEENS1W_13TreeVisitor2xIN55_GLOBAL__N__4b49866d_22_sparse_int8_mm_sm80_cu_447278ce16ColumnMajorStoreINS1W_22OutputTileThreadLayoutIS7_S1H_fLi4ELi1EEENS_10bfloat16_tEN4cute5tupleIJNS2T_1CILi1EEElNS2V_ILi0EEEEEEEEJNS2N_INS1W_14VisitorComputeINS_10multipliesES2S_fLS2J_2EvEEJNS1W_27VisitorColOrScalarBroadcastIS2R_fNS2U_IJS2W_S2X_S2X_EEEEENS2N_INS30_IS31_ffLS2J_2EvEEJNS1W_27VisitorRowOrScalarBroadcastIS2R_fNS2U_IJS2X_S2W_S2X_EEEEENS1W_15VisitorAccFetchEEEEEEEEEELi1ELi1EEENS4_30GemmIdentityThreadblockSwizzleILi1EEEEEEEvNT_6ParamsE",
+              "us": 7541.26,
+              "pct": 79.72,
+              "calls": 144,
+              "example": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLi"
+            },
+            {
+              "name": "flash::flash_fwd_splitkv_kernel",
+              "us": 344.06,
+              "pct": 3.64,
+              "calls": 36,
+              "example": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 128, 4, cutlass::bfloat16_t> >, true, false, false, false, true, false, false, false>(flash::Flash_fwd_params)"
+            },
+            {
+              "name": "vllm::dynamic_scaled_int8_quant_kernel",
+              "us": 299.5,
+              "pct": 3.17,
+              "calls": 144,
+              "example": "void vllm::dynamic_scaled_int8_quant_kernel<c10::BFloat16, float>(c10::BFloat16 const*, signed char*, float*, int)"
+            },
+            {
+              "name": "Memcpy DtoD (Device -> Device)",
+              "us": 299.23,
+              "pct": 3.16,
+              "calls": 288,
+              "example": "Memcpy DtoD (Device -> Device)"
+            },
+            {
+              "name": "at::native::vectorized_elementwise_kernel",
+              "us": 279.79,
+              "pct": 2.96,
+              "calls": 288,
+              "example": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<signed char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<signed char>, std::array<char*, 1ul>)"
+            },
+            {
+              "name": "vllm::fused_add_rms_norm_kernel",
+              "us": 182.68,
+              "pct": 1.93,
+              "calls": 72,
+              "example": "std::enable_if<(((8)>(0)))&&vllm::_typeConvert<c10::BFloat16>::exists, void>::type vllm::fused_add_rms_norm_kernel<c10::BFloat16, 8, true>(c10::BFloat16*, long, c10::BFloat16*, c10::BFloat16 const*, float, int, int, long)"
+            },
+            {
+              "name": "vllm::act_and_mul_kernel",
+              "us": 161.79,
+              "pct": 1.71,
+              "calls": 36,
+              "example": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, "
+            },
+            {
+              "name": "vllm::rms_norm_kernel",
+              "us": 157.87,
+              "pct": 1.67,
+              "calls": 73,
+              "example": "void vllm::rms_norm_kernel<c10::BFloat16, 8, 2, true>(c10::BFloat16*, c10::BFloat16 const*, long, long, long, long, long, c10::BFloat16 const*, long, float, int, int)"
+            },
+            {
+              "name": "vllm::rotary_embedding_kernel",
+              "us": 105.45,
+              "pct": 1.11,
+              "calls": 36,
+              "example": "void vllm::rotary_embedding_kernel<c10::BFloat16, c10::BFloat16, true>(long const*, c10::BFloat16*, c10::BFloat16*, c10::BFloat16 const*, int, long, long, long, int, int, int, long, bool)"
+            },
+            {
+              "name": "vllm::reshape_and_cache_flash_kernel",
+              "us": 76.3,
+              "pct": 0.81,
+              "calls": 36,
+              "example": "void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16, (vllm::Fp8KVCacheDataType)0>(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, long const*, long, long, long, long, long, int, int, int, float const*, float const*, int)"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "case": "t64",
+    "requests": [
+      {
+        "query_len": 64,
+        "kv_len": 64,
+        "num_draft_tokens": 0,
+        "chunked": false
+      }
+    ],
+    "median_us": 11030.240234375,
+    "ranks": [
+      {
+        "num_tokens": 64,
+        "kv_blocks": 5,
+        "routing": "real",
+        "num_local_tokens": 64,
+        "num_tokens_after_padding": 64,
+        "batch_order": [
+          "bench-0"
+        ],
+        "timing_scope": "target_only",
+        "eager_repeat": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_vs_eager": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_deterministic": true,
+        "finite": true,
+        "state_reset_bytes": 9437184,
+        "latency_us": {
+          "timer": "graph_events",
+          "median": 11030.240234375,
+          "sample_spread_pct": 0.0,
+          "mean": 11095.1474609375,
+          "std": 107.75898742675781,
+          "min": 11008.1923828125,
+          "p90": 11203.6552734375,
+          "count": 3,
+          "samples_us": [
+            11247.01,
+            11030.24,
+            11008.19
+          ]
+        },
+        "profile": {
+          "summary": "/root/rivermind-data/prof/sparse_col/t64.rank0.kernels.json",
+          "span_us": 10811.73,
+          "busy_us": 10806.77,
+          "activities": 579,
+          "top_kernels": [
+            {
+              "name": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLinearShapeILi64ELi128EEELi128ENSG_ILi4ELi8EEELi16EEENS_5ArrayIaLi16ELb0EEELb0ENSD_9NoPermuteEEENS9_25RegularTileAccessIteratorISC_aNSD_37RowMajorTensorOpMultiplicandCrosswiseILi8ELi64EEELi0ESJ_Li16EEELNS_4arch14CacheOperation4KindE1ENSA_INSB_ILi128ELi128EEEaNSD_11ColumnMajorELi0ENSF_INSG_ILi128ELi128EEELi128ENSG_ILi8ELi4EEELi16EEESL_Lb0ESM_EENSO_ISV_aNSD_40ColumnMajorTensorOpMultiplicandCrosswiseILi8ELi128EEELi1ESZ_Li16EEELSU_1EiSE_NSA_INSB_ILi128ELi4EEEjNSD_22ColumnMajorInterleavedILi2EEELi1ENS8_30PitchLinearStripminedThreadMapINSG_ILi256ELi2EEELi128ELi4EEENSK_IjLi4ELb1EEELb0ESM_EENSO_INSB_ILi256ELi2EEEjSW_Li0ES19_Li16EEELSU_1ENS4_15SparseMmaPolicyINS1_4warp17SparseMmaTensorOpINS6_ILi64ELi64ELi128EEEaSQ_aS12_iSE_NS1F_17MmaTensorOpPolicyINSS_9SparseMmaINS6_ILi16ELi8ELi64EEELi32EaSE_aSW_iSE_NSS_21OpMultiplyAddSaturateELNSS_12SPFormatType4KindE0EEENSB_ILi1ELi1EEEEELi1ELb0EbEENSB_ILi0ELi0EEES1S_S1S_Li1EEELi3EbEENS_8epilogue11threadblock28EpilogueWithVisitorCallbacksINS1W_8EpilogueIS7_S1R_Li1ENS1W_22PredicatedTileIteratorINS1W_26OutputTileOptimalThreadMapINS1W_15OutputTileShapeILi128ELi8ELi2ELi1ELi1EEENS21_ILi1ELi8ELi1ELi1ELi8EEELi128ELi4ELi32EEEfLb0ESM_Lb0EEENS1V_4warp24FragmentIteratorTensorOpIS1H_S1K_iNSK_IiLi4ELb1EEESE_EENS26_20TileIteratorTensorOpIS1H_S1K_iSE_EENS1W_18SharedLoadIteratorINS24_18CompactedThreadMapEiLi16EEENS1V_6thread17LinearCombinationIfLi4EiiLNS2F_9ScaleType4KindE0ELNS_15FloatRoundStyleE2EfEENSB_ILi0ELi8EEELi1ELi1EEENS1W_13TreeVisitor2xIN55_GLOBAL__N__4b49866d_22_sparse_int8_mm_sm80_cu_447278ce16ColumnMajorStoreINS1W_22OutputTileThreadLayoutIS7_S1H_fLi4ELi1EEENS_10bfloat16_tEN4cute5tupleIJNS2T_1CILi1EEElNS2V_ILi0EEEEEEEEJNS2N_INS1W_14VisitorComputeINS_10multipliesES2S_fLS2J_2EvEEJNS1W_27VisitorColOrScalarBroadcastIS2R_fNS2U_IJS2W_S2X_S2X_EEEEENS2N_INS30_IS31_ffLS2J_2EvEEJNS1W_27VisitorRowOrScalarBroadcastIS2R_fNS2U_IJS2X_S2W_S2X_EEEEENS1W_15VisitorAccFetchEEEEEEEEEELi1ELi1EEENS4_30GemmIdentityThreadblockSwizzleILi1EEEEEEEvNT_6ParamsE",
+              "us": 9188.59,
+              "pct": 85.14,
+              "calls": 144,
+              "example": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLi"
+            },
+            {
+              "name": "flash::flash_fwd_splitkv_kernel",
+              "us": 378.58,
+              "pct": 3.51,
+              "calls": 36,
+              "example": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 128, 4, cutlass::bfloat16_t> >, true, false, false, false, true, false, false, false>(flash::Flash_fwd_params)"
+            },
+            {
+              "name": "vllm::dynamic_scaled_int8_quant_kernel",
+              "us": 329.83,
+              "pct": 3.06,
+              "calls": 144,
+              "example": "void vllm::dynamic_scaled_int8_quant_kernel<c10::BFloat16, float>(c10::BFloat16 const*, signed char*, float*, int)"
+            },
+            {
+              "name": "vllm::fused_add_rms_norm_kernel",
+              "us": 243.61,
+              "pct": 2.26,
+              "calls": 72,
+              "example": "std::enable_if<(((8)>(0)))&&vllm::_typeConvert<c10::BFloat16>::exists, void>::type vllm::fused_add_rms_norm_kernel<c10::BFloat16, 8, true>(c10::BFloat16*, long, c10::BFloat16*, c10::BFloat16 const*, float, int, int, long)"
+            },
+            {
+              "name": "vllm::act_and_mul_kernel",
+              "us": 229.03,
+              "pct": 2.12,
+              "calls": 36,
+              "example": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, "
+            },
+            {
+              "name": "vllm::rms_norm_kernel",
+              "us": 224.08,
+              "pct": 2.08,
+              "calls": 73,
+              "example": "void vllm::rms_norm_kernel<c10::BFloat16, 8, 2, true>(c10::BFloat16*, c10::BFloat16 const*, long, long, long, long, long, c10::BFloat16 const*, long, float, int, int)"
+            },
+            {
+              "name": "vllm::rotary_embedding_kernel",
+              "us": 111.88,
+              "pct": 1.04,
+              "calls": 36,
+              "example": "void vllm::rotary_embedding_kernel<c10::BFloat16, c10::BFloat16, true>(long const*, c10::BFloat16*, c10::BFloat16*, c10::BFloat16 const*, int, long, long, long, int, int, int, long, bool)"
+            },
+            {
+              "name": "vllm::reshape_and_cache_flash_kernel",
+              "us": 81.5,
+              "pct": 0.76,
+              "calls": 36,
+              "example": "void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16, (vllm::Fp8KVCacheDataType)0>(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, long const*, long, long, long, long, long, int, int, int, float const*, float const*, int)"
+            },
+            {
+              "name": "at::native::vectorized_gather_kernel",
+              "us": 3.04,
+              "pct": 0.03,
+              "calls": 1,
+              "example": "void at::native::vectorized_gather_kernel<16, long>(char*, char*, long*, int, long, long, long, long, bool)"
+            },
+            {
+              "name": "at::native::unrolled_elementwise_kernel",
+              "us": 2.01,
+              "pct": 0.02,
+              "calls": 1,
+              "example": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#4}::operator()() const::{lambda(long)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned in"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "case": "t256",
+    "requests": [
+      {
+        "query_len": 256,
+        "kv_len": 256,
+        "num_draft_tokens": 0,
+        "chunked": false
+      }
+    ],
+    "median_us": 23139.423828125,
+    "ranks": [
+      {
+        "num_tokens": 256,
+        "kv_blocks": 17,
+        "routing": "real",
+        "num_local_tokens": 256,
+        "num_tokens_after_padding": 256,
+        "batch_order": [
+          "bench-0"
+        ],
+        "timing_scope": "target_only",
+        "eager_repeat": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_vs_eager": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_deterministic": true,
+        "finite": true,
+        "state_reset_bytes": 37748736,
+        "latency_us": {
+          "timer": "graph_events",
+          "median": 23139.423828125,
+          "sample_spread_pct": 0.0,
+          "mean": 23208.224609375,
+          "std": 107.7807846069336,
+          "min": 23124.83203125,
+          "p90": 23316.216796875,
+          "count": 3,
+          "samples_us": [
+            23360.42,
+            23139.42,
+            23124.83
+          ]
+        },
+        "profile": {
+          "summary": "/root/rivermind-data/prof/sparse_col/t256.rank0.kernels.json",
+          "span_us": 22984.07,
+          "busy_us": 22989.92,
+          "activities": 579,
+          "top_kernels": [
+            {
+              "name": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLinearShapeILi64ELi128EEELi128ENSG_ILi4ELi8EEELi16EEENS_5ArrayIaLi16ELb0EEELb0ENSD_9NoPermuteEEENS9_25RegularTileAccessIteratorISC_aNSD_37RowMajorTensorOpMultiplicandCrosswiseILi8ELi64EEELi0ESJ_Li16EEELNS_4arch14CacheOperation4KindE1ENSA_INSB_ILi128ELi128EEEaNSD_11ColumnMajorELi0ENSF_INSG_ILi128ELi128EEELi128ENSG_ILi8ELi4EEELi16EEESL_Lb0ESM_EENSO_ISV_aNSD_40ColumnMajorTensorOpMultiplicandCrosswiseILi8ELi128EEELi1ESZ_Li16EEELSU_1EiSE_NSA_INSB_ILi128ELi4EEEjNSD_22ColumnMajorInterleavedILi2EEELi1ENS8_30PitchLinearStripminedThreadMapINSG_ILi256ELi2EEELi128ELi4EEENSK_IjLi4ELb1EEELb0ESM_EENSO_INSB_ILi256ELi2EEEjSW_Li0ES19_Li16EEELSU_1ENS4_15SparseMmaPolicyINS1_4warp17SparseMmaTensorOpINS6_ILi64ELi64ELi128EEEaSQ_aS12_iSE_NS1F_17MmaTensorOpPolicyINSS_9SparseMmaINS6_ILi16ELi8ELi64EEELi32EaSE_aSW_iSE_NSS_21OpMultiplyAddSaturateELNSS_12SPFormatType4KindE0EEENSB_ILi1ELi1EEEEELi1ELb0EbEENSB_ILi0ELi0EEES1S_S1S_Li1EEELi3EbEENS_8epilogue11threadblock28EpilogueWithVisitorCallbacksINS1W_8EpilogueIS7_S1R_Li1ENS1W_22PredicatedTileIteratorINS1W_26OutputTileOptimalThreadMapINS1W_15OutputTileShapeILi128ELi8ELi2ELi1ELi1EEENS21_ILi1ELi8ELi1ELi1ELi8EEELi128ELi4ELi32EEEfLb0ESM_Lb0EEENS1V_4warp24FragmentIteratorTensorOpIS1H_S1K_iNSK_IiLi4ELb1EEESE_EENS26_20TileIteratorTensorOpIS1H_S1K_iSE_EENS1W_18SharedLoadIteratorINS24_18CompactedThreadMapEiLi16EEENS1V_6thread17LinearCombinationIfLi4EiiLNS2F_9ScaleType4KindE0ELNS_15FloatRoundStyleE2EfEENSB_ILi0ELi8EEELi1ELi1EEENS1W_13TreeVisitor2xIN55_GLOBAL__N__4b49866d_22_sparse_int8_mm_sm80_cu_447278ce16ColumnMajorStoreINS1W_22OutputTileThreadLayoutIS7_S1H_fLi4ELi1EEENS_10bfloat16_tEN4cute5tupleIJNS2T_1CILi1EEElNS2V_ILi0EEEEEEEEJNS2N_INS1W_14VisitorComputeINS_10multipliesES2S_fLS2J_2EvEEJNS1W_27VisitorColOrScalarBroadcastIS2R_fNS2U_IJS2W_S2X_S2X_EEEEENS2N_INS30_IS31_ffLS2J_2EvEEJNS1W_27VisitorRowOrScalarBroadcastIS2R_fNS2U_IJS2X_S2W_S2X_EEEEENS1W_15VisitorAccFetchEEEEEEEEEELi1ELi1EEENS4_30GemmIdentityThreadblockSwizzleILi1EEEEEEEvNT_6ParamsE",
+              "us": 18873.65,
+              "pct": 82.14,
+              "calls": 144,
+              "example": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLi"
+            },
+            {
+              "name": "flash::flash_fwd_splitkv_kernel",
+              "us": 1104.74,
+              "pct": 4.81,
+              "calls": 36,
+              "example": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 128, 4, cutlass::bfloat16_t> >, true, false, false, false, true, false, false, false>(flash::Flash_fwd_params)"
+            },
+            {
+              "name": "vllm::act_and_mul_kernel",
+              "us": 845.26,
+              "pct": 3.68,
+              "calls": 36,
+              "example": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, "
+            },
+            {
+              "name": "vllm::dynamic_scaled_int8_quant_kernel",
+              "us": 719.74,
+              "pct": 3.13,
+              "calls": 144,
+              "example": "void vllm::dynamic_scaled_int8_quant_kernel<c10::BFloat16, float>(c10::BFloat16 const*, signed char*, float*, int)"
+            },
+            {
+              "name": "vllm::rms_norm_kernel",
+              "us": 538.49,
+              "pct": 2.34,
+              "calls": 73,
+              "example": "void vllm::rms_norm_kernel<c10::BFloat16, 8, 2, true>(c10::BFloat16*, c10::BFloat16 const*, long, long, long, long, long, c10::BFloat16 const*, long, float, int, int)"
+            },
+            {
+              "name": "vllm::fused_add_rms_norm_kernel",
+              "us": 483.35,
+              "pct": 2.1,
+              "calls": 72,
+              "example": "std::enable_if<(((8)>(0)))&&vllm::_typeConvert<c10::BFloat16>::exists, void>::type vllm::fused_add_rms_norm_kernel<c10::BFloat16, 8, true>(c10::BFloat16*, long, c10::BFloat16*, c10::BFloat16 const*, float, int, int, long)"
+            },
+            {
+              "name": "vllm::rotary_embedding_kernel",
+              "us": 228.03,
+              "pct": 0.99,
+              "calls": 36,
+              "example": "void vllm::rotary_embedding_kernel<c10::BFloat16, c10::BFloat16, true>(long const*, c10::BFloat16*, c10::BFloat16*, c10::BFloat16 const*, int, long, long, long, int, int, int, long, bool)"
+            },
+            {
+              "name": "vllm::reshape_and_cache_flash_kernel",
+              "us": 174.02,
+              "pct": 0.76,
+              "calls": 36,
+              "example": "void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16, (vllm::Fp8KVCacheDataType)0>(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, long const*, long, long, long, long, long, int, int, int, float const*, float const*, int)"
+            },
+            {
+              "name": "at::native::vectorized_gather_kernel",
+              "us": 7.41,
+              "pct": 0.03,
+              "calls": 1,
+              "example": "void at::native::vectorized_gather_kernel<16, long>(char*, char*, long*, int, long, long, long, long, bool)"
+            },
+            {
+              "name": "at::native::unrolled_elementwise_kernel",
+              "us": 2.92,
+              "pct": 0.01,
+              "calls": 1,
+              "example": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#4}::operator()() const::{lambda(long)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned in"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "case": "t1024",
+    "requests": [
+      {
+        "query_len": 1024,
+        "kv_len": 1024,
+        "num_draft_tokens": 0,
+        "chunked": false
+      }
+    ],
+    "median_us": 92491.875,
+    "ranks": [
+      {
+        "num_tokens": 1024,
+        "kv_blocks": 65,
+        "routing": "real",
+        "num_local_tokens": 1024,
+        "num_tokens_after_padding": 1024,
+        "batch_order": [
+          "bench-0"
+        ],
+        "timing_scope": "target_only",
+        "eager_repeat": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_vs_eager": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_deterministic": true,
+        "finite": true,
+        "state_reset_bytes": 150994944,
+        "latency_us": {
+          "timer": "graph_events",
+          "median": 92491.875,
+          "sample_spread_pct": 0.0,
+          "mean": 92484.2734375,
+          "std": 65.37234497070312,
+          "min": 92400.671875,
+          "p90": 92546.578125,
+          "count": 3,
+          "samples_us": [
+            92491.88,
+            92560.26,
+            92400.67
+          ]
+        },
+        "profile": {
+          "summary": "/root/rivermind-data/prof/sparse_col/t1024.rank0.kernels.json",
+          "span_us": 92707.58,
+          "busy_us": 92739.13,
+          "activities": 579,
+          "top_kernels": [
+            {
+              "name": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLinearShapeILi64ELi128EEELi128ENSG_ILi4ELi8EEELi16EEENS_5ArrayIaLi16ELb0EEELb0ENSD_9NoPermuteEEENS9_25RegularTileAccessIteratorISC_aNSD_37RowMajorTensorOpMultiplicandCrosswiseILi8ELi64EEELi0ESJ_Li16EEELNS_4arch14CacheOperation4KindE1ENSA_INSB_ILi128ELi128EEEaNSD_11ColumnMajorELi0ENSF_INSG_ILi128ELi128EEELi128ENSG_ILi8ELi4EEELi16EEESL_Lb0ESM_EENSO_ISV_aNSD_40ColumnMajorTensorOpMultiplicandCrosswiseILi8ELi128EEELi1ESZ_Li16EEELSU_1EiSE_NSA_INSB_ILi128ELi4EEEjNSD_22ColumnMajorInterleavedILi2EEELi1ENS8_30PitchLinearStripminedThreadMapINSG_ILi256ELi2EEELi128ELi4EEENSK_IjLi4ELb1EEELb0ESM_EENSO_INSB_ILi256ELi2EEEjSW_Li0ES19_Li16EEELSU_1ENS4_15SparseMmaPolicyINS1_4warp17SparseMmaTensorOpINS6_ILi64ELi64ELi128EEEaSQ_aS12_iSE_NS1F_17MmaTensorOpPolicyINSS_9SparseMmaINS6_ILi16ELi8ELi64EEELi32EaSE_aSW_iSE_NSS_21OpMultiplyAddSaturateELNSS_12SPFormatType4KindE0EEENSB_ILi1ELi1EEEEELi1ELb0EbEENSB_ILi0ELi0EEES1S_S1S_Li1EEELi3EbEENS_8epilogue11threadblock28EpilogueWithVisitorCallbacksINS1W_8EpilogueIS7_S1R_Li1ENS1W_22PredicatedTileIteratorINS1W_26OutputTileOptimalThreadMapINS1W_15OutputTileShapeILi128ELi8ELi2ELi1ELi1EEENS21_ILi1ELi8ELi1ELi1ELi8EEELi128ELi4ELi32EEEfLb0ESM_Lb0EEENS1V_4warp24FragmentIteratorTensorOpIS1H_S1K_iNSK_IiLi4ELb1EEESE_EENS26_20TileIteratorTensorOpIS1H_S1K_iSE_EENS1W_18SharedLoadIteratorINS24_18CompactedThreadMapEiLi16EEENS1V_6thread17LinearCombinationIfLi4EiiLNS2F_9ScaleType4KindE0ELNS_15FloatRoundStyleE2EfEENSB_ILi0ELi8EEELi1ELi1EEENS1W_13TreeVisitor2xIN55_GLOBAL__N__4b49866d_22_sparse_int8_mm_sm80_cu_447278ce16ColumnMajorStoreINS1W_22OutputTileThreadLayoutIS7_S1H_fLi4ELi1EEENS_10bfloat16_tEN4cute5tupleIJNS2T_1CILi1EEElNS2V_ILi0EEEEEEEEJNS2N_INS1W_14VisitorComputeINS_10multipliesES2S_fLS2J_2EvEEJNS1W_27VisitorColOrScalarBroadcastIS2R_fNS2U_IJS2W_S2X_S2X_EEEEENS2N_INS30_IS31_ffLS2J_2EvEEJNS1W_27VisitorRowOrScalarBroadcastIS2R_fNS2U_IJS2X_S2W_S2X_EEEEENS1W_15VisitorAccFetchEEEEEEEEEELi1ELi1EEENS4_30GemmIdentityThreadblockSwizzleILi1EEEEEEEvNT_6ParamsE",
+              "us": 71355.32,
+              "pct": 76.68,
+              "calls": 144,
+              "example": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLi"
+            },
+            {
+              "name": "flash::flash_fwd_splitkv_kernel",
+              "us": 7933.44,
+              "pct": 8.53,
+              "calls": 36,
+              "example": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 128, 4, cutlass::bfloat16_t> >, true, false, false, false, true, false, false, false>(flash::Flash_fwd_params)"
+            },
+            {
+              "name": "vllm::dynamic_scaled_int8_quant_kernel",
+              "us": 4234.43,
+              "pct": 4.55,
+              "calls": 144,
+              "example": "void vllm::dynamic_scaled_int8_quant_kernel<c10::BFloat16, float>(c10::BFloat16 const*, signed char*, float*, int)"
+            },
+            {
+              "name": "vllm::act_and_mul_kernel",
+              "us": 3259.03,
+              "pct": 3.5,
+              "calls": 36,
+              "example": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, "
+            },
+            {
+              "name": "vllm::fused_add_rms_norm_kernel",
+              "us": 2838.53,
+              "pct": 3.05,
+              "calls": 72,
+              "example": "std::enable_if<(((8)>(0)))&&vllm::_typeConvert<c10::BFloat16>::exists, void>::type vllm::fused_add_rms_norm_kernel<c10::BFloat16, 8, true>(c10::BFloat16*, long, c10::BFloat16*, c10::BFloat16 const*, float, int, int, long)"
+            },
+            {
+              "name": "vllm::rms_norm_kernel",
+              "us": 1783.73,
+              "pct": 1.92,
+              "calls": 73,
+              "example": "void vllm::rms_norm_kernel<c10::BFloat16, 8, 2, true>(c10::BFloat16*, c10::BFloat16 const*, long, long, long, long, long, c10::BFloat16 const*, long, float, int, int)"
+            },
+            {
+              "name": "vllm::rotary_embedding_kernel",
+              "us": 1137.37,
+              "pct": 1.22,
+              "calls": 36,
+              "example": "void vllm::rotary_embedding_kernel<c10::BFloat16, c10::BFloat16, true>(long const*, c10::BFloat16*, c10::BFloat16*, c10::BFloat16 const*, int, long, long, long, int, int, int, long, bool)"
+            },
+            {
+              "name": "vllm::reshape_and_cache_flash_kernel",
+              "us": 481.74,
+              "pct": 0.52,
+              "calls": 36,
+              "example": "void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16, (vllm::Fp8KVCacheDataType)0>(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, long const*, long, long, long, long, long, int, int, int, float const*, float const*, int)"
+            },
+            {
+              "name": "at::native::vectorized_gather_kernel",
+              "us": 22.58,
+              "pct": 0.02,
+              "calls": 1,
+              "example": "void at::native::vectorized_gather_kernel<16, long>(char*, char*, long*, int, long, long, long, long, bool)"
+            },
+            {
+              "name": "at::native::unrolled_elementwise_kernel",
+              "us": 4.22,
+              "pct": 0.0,
+              "calls": 1,
+              "example": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#4}::operator()() const::{lambda(long)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned in"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "case": "t2048",
+    "requests": [
+      {
+        "query_len": 2048,
+        "kv_len": 2048,
+        "num_draft_tokens": 0,
+        "chunked": false
+      }
+    ],
+    "median_us": 188642.328125,
+    "ranks": [
+      {
+        "num_tokens": 2048,
+        "kv_blocks": 129,
+        "routing": "real",
+        "num_local_tokens": 2048,
+        "num_tokens_after_padding": 2048,
+        "batch_order": [
+          "bench-0"
+        ],
+        "timing_scope": "target_only",
+        "eager_repeat": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_vs_eager": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_deterministic": true,
+        "finite": true,
+        "state_reset_bytes": 301989888,
+        "latency_us": {
+          "timer": "graph_events",
+          "median": 188642.328125,
+          "sample_spread_pct": 0.0,
+          "mean": 188395.234375,
+          "std": 465.29156494140625,
+          "min": 187743.515625,
+          "p90": 188768.328125,
+          "count": 3,
+          "samples_us": [
+            188799.83,
+            188642.33,
+            187743.52
+          ]
+        },
+        "profile": {
+          "summary": "/root/rivermind-data/prof/sparse_col/t2048.rank0.kernels.json",
+          "span_us": 187874.4,
+          "busy_us": 187906.88,
+          "activities": 579,
+          "top_kernels": [
+            {
+              "name": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLinearShapeILi64ELi128EEELi128ENSG_ILi4ELi8EEELi16EEENS_5ArrayIaLi16ELb0EEELb0ENSD_9NoPermuteEEENS9_25RegularTileAccessIteratorISC_aNSD_37RowMajorTensorOpMultiplicandCrosswiseILi8ELi64EEELi0ESJ_Li16EEELNS_4arch14CacheOperation4KindE1ENSA_INSB_ILi128ELi128EEEaNSD_11ColumnMajorELi0ENSF_INSG_ILi128ELi128EEELi128ENSG_ILi8ELi4EEELi16EEESL_Lb0ESM_EENSO_ISV_aNSD_40ColumnMajorTensorOpMultiplicandCrosswiseILi8ELi128EEELi1ESZ_Li16EEELSU_1EiSE_NSA_INSB_ILi128ELi4EEEjNSD_22ColumnMajorInterleavedILi2EEELi1ENS8_30PitchLinearStripminedThreadMapINSG_ILi256ELi2EEELi128ELi4EEENSK_IjLi4ELb1EEELb0ESM_EENSO_INSB_ILi256ELi2EEEjSW_Li0ES19_Li16EEELSU_1ENS4_15SparseMmaPolicyINS1_4warp17SparseMmaTensorOpINS6_ILi64ELi64ELi128EEEaSQ_aS12_iSE_NS1F_17MmaTensorOpPolicyINSS_9SparseMmaINS6_ILi16ELi8ELi64EEELi32EaSE_aSW_iSE_NSS_21OpMultiplyAddSaturateELNSS_12SPFormatType4KindE0EEENSB_ILi1ELi1EEEEELi1ELb0EbEENSB_ILi0ELi0EEES1S_S1S_Li1EEELi3EbEENS_8epilogue11threadblock28EpilogueWithVisitorCallbacksINS1W_8EpilogueIS7_S1R_Li1ENS1W_22PredicatedTileIteratorINS1W_26OutputTileOptimalThreadMapINS1W_15OutputTileShapeILi128ELi8ELi2ELi1ELi1EEENS21_ILi1ELi8ELi1ELi1ELi8EEELi128ELi4ELi32EEEfLb0ESM_Lb0EEENS1V_4warp24FragmentIteratorTensorOpIS1H_S1K_iNSK_IiLi4ELb1EEESE_EENS26_20TileIteratorTensorOpIS1H_S1K_iSE_EENS1W_18SharedLoadIteratorINS24_18CompactedThreadMapEiLi16EEENS1V_6thread17LinearCombinationIfLi4EiiLNS2F_9ScaleType4KindE0ELNS_15FloatRoundStyleE2EfEENSB_ILi0ELi8EEELi1ELi1EEENS1W_13TreeVisitor2xIN55_GLOBAL__N__4b49866d_22_sparse_int8_mm_sm80_cu_447278ce16ColumnMajorStoreINS1W_22OutputTileThreadLayoutIS7_S1H_fLi4ELi1EEENS_10bfloat16_tEN4cute5tupleIJNS2T_1CILi1EEElNS2V_ILi0EEEEEEEEJNS2N_INS1W_14VisitorComputeINS_10multipliesES2S_fLS2J_2EvEEJNS1W_27VisitorColOrScalarBroadcastIS2R_fNS2U_IJS2W_S2X_S2X_EEEEENS2N_INS30_IS31_ffLS2J_2EvEEJNS1W_27VisitorRowOrScalarBroadcastIS2R_fNS2U_IJS2X_S2W_S2X_EEEEENS1W_15VisitorAccFetchEEEEEEEEEELi1ELi1EEENS4_30GemmIdentityThreadblockSwizzleILi1EEEEEEEvNT_6ParamsE",
+              "us": 133951.63,
+              "pct": 71.3,
+              "calls": 144,
+              "example": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLi"
+            },
+            {
+              "name": "flash::flash_fwd_splitkv_kernel",
+              "us": 26621.22,
+              "pct": 14.17,
+              "calls": 36,
+              "example": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 128, 4, cutlass::bfloat16_t> >, true, false, false, false, true, false, false, false>(flash::Flash_fwd_params)"
+            },
+            {
+              "name": "vllm::dynamic_scaled_int8_quant_kernel",
+              "us": 8592.31,
+              "pct": 4.57,
+              "calls": 144,
+              "example": "void vllm::dynamic_scaled_int8_quant_kernel<c10::BFloat16, float>(c10::BFloat16 const*, signed char*, float*, int)"
+            },
+            {
+              "name": "vllm::act_and_mul_kernel",
+              "us": 6460.09,
+              "pct": 3.44,
+              "calls": 36,
+              "example": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, "
+            },
+            {
+              "name": "vllm::fused_add_rms_norm_kernel",
+              "us": 5722.99,
+              "pct": 3.05,
+              "calls": 72,
+              "example": "std::enable_if<(((8)>(0)))&&vllm::_typeConvert<c10::BFloat16>::exists, void>::type vllm::fused_add_rms_norm_kernel<c10::BFloat16, 8, true>(c10::BFloat16*, long, c10::BFloat16*, c10::BFloat16 const*, float, int, int, long)"
+            },
+            {
+              "name": "vllm::rms_norm_kernel",
+              "us": 3428.43,
+              "pct": 1.82,
+              "calls": 73,
+              "example": "void vllm::rms_norm_kernel<c10::BFloat16, 8, 2, true>(c10::BFloat16*, c10::BFloat16 const*, long, long, long, long, long, c10::BFloat16 const*, long, float, int, int)"
+            },
+            {
+              "name": "vllm::rotary_embedding_kernel",
+              "us": 2201.65,
+              "pct": 1.17,
+              "calls": 36,
+              "example": "void vllm::rotary_embedding_kernel<c10::BFloat16, c10::BFloat16, true>(long const*, c10::BFloat16*, c10::BFloat16*, c10::BFloat16 const*, int, long, long, long, int, int, int, long, bool)"
+            },
+            {
+              "name": "vllm::reshape_and_cache_flash_kernel",
+              "us": 856.31,
+              "pct": 0.46,
+              "calls": 36,
+              "example": "void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16, (vllm::Fp8KVCacheDataType)0>(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, long const*, long, long, long, long, long, int, int, int, float const*, float const*, int)"
+            },
+            {
+              "name": "at::native::vectorized_gather_kernel",
+              "us": 42.5,
+              "pct": 0.02,
+              "calls": 1,
+              "example": "void at::native::vectorized_gather_kernel<16, long>(char*, char*, long*, int, long, long, long, long, bool)"
+            },
+            {
+              "name": "at::native::unrolled_elementwise_kernel",
+              "us": 4.3,
+              "pct": 0.0,
+              "calls": 1,
+              "example": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#4}::operator()() const::{lambda(long)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned in"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "case": "t8192",
+    "requests": [
+      {
+        "query_len": 8192,
+        "kv_len": 8192,
+        "num_draft_tokens": 0,
+        "chunked": false
+      }
+    ],
+    "median_us": 957878.25,
+    "ranks": [
+      {
+        "num_tokens": 8192,
+        "kv_blocks": 513,
+        "routing": "real",
+        "num_local_tokens": 8192,
+        "num_tokens_after_padding": 8192,
+        "batch_order": [
+          "bench-0"
+        ],
+        "timing_scope": "target_only",
+        "eager_repeat": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_vs_eager": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_deterministic": true,
+        "finite": true,
+        "state_reset_bytes": 1207959552,
+        "latency_us": {
+          "timer": "graph_events",
+          "median": 957878.25,
+          "sample_spread_pct": 0.0,
+          "mean": 957702.0,
+          "std": 875.80029296875,
+          "min": 956552.1875,
+          "p90": 958516.125,
+          "count": 3,
+          "samples_us": [
+            957878.25,
+            956552.19,
+            958675.62
+          ]
+        },
+        "profile": {
+          "summary": "/root/rivermind-data/prof/sparse_col/t8192.rank0.kernels.json",
+          "span_us": 959208.92,
+          "busy_us": 959239.89,
+          "activities": 579,
+          "top_kernels": [
+            {
+              "name": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLinearShapeILi64ELi128EEELi128ENSG_ILi4ELi8EEELi16EEENS_5ArrayIaLi16ELb0EEELb0ENSD_9NoPermuteEEENS9_25RegularTileAccessIteratorISC_aNSD_37RowMajorTensorOpMultiplicandCrosswiseILi8ELi64EEELi0ESJ_Li16EEELNS_4arch14CacheOperation4KindE1ENSA_INSB_ILi128ELi128EEEaNSD_11ColumnMajorELi0ENSF_INSG_ILi128ELi128EEELi128ENSG_ILi8ELi4EEELi16EEESL_Lb0ESM_EENSO_ISV_aNSD_40ColumnMajorTensorOpMultiplicandCrosswiseILi8ELi128EEELi1ESZ_Li16EEELSU_1EiSE_NSA_INSB_ILi128ELi4EEEjNSD_22ColumnMajorInterleavedILi2EEELi1ENS8_30PitchLinearStripminedThreadMapINSG_ILi256ELi2EEELi128ELi4EEENSK_IjLi4ELb1EEELb0ESM_EENSO_INSB_ILi256ELi2EEEjSW_Li0ES19_Li16EEELSU_1ENS4_15SparseMmaPolicyINS1_4warp17SparseMmaTensorOpINS6_ILi64ELi64ELi128EEEaSQ_aS12_iSE_NS1F_17MmaTensorOpPolicyINSS_9SparseMmaINS6_ILi16ELi8ELi64EEELi32EaSE_aSW_iSE_NSS_21OpMultiplyAddSaturateELNSS_12SPFormatType4KindE0EEENSB_ILi1ELi1EEEEELi1ELb0EbEENSB_ILi0ELi0EEES1S_S1S_Li1EEELi3EbEENS_8epilogue11threadblock28EpilogueWithVisitorCallbacksINS1W_8EpilogueIS7_S1R_Li1ENS1W_22PredicatedTileIteratorINS1W_26OutputTileOptimalThreadMapINS1W_15OutputTileShapeILi128ELi8ELi2ELi1ELi1EEENS21_ILi1ELi8ELi1ELi1ELi8EEELi128ELi4ELi32EEEfLb0ESM_Lb0EEENS1V_4warp24FragmentIteratorTensorOpIS1H_S1K_iNSK_IiLi4ELb1EEESE_EENS26_20TileIteratorTensorOpIS1H_S1K_iSE_EENS1W_18SharedLoadIteratorINS24_18CompactedThreadMapEiLi16EEENS1V_6thread17LinearCombinationIfLi4EiiLNS2F_9ScaleType4KindE0ELNS_15FloatRoundStyleE2EfEENSB_ILi0ELi8EEELi1ELi1EEENS1W_13TreeVisitor2xIN55_GLOBAL__N__4b49866d_22_sparse_int8_mm_sm80_cu_447278ce16ColumnMajorStoreINS1W_22OutputTileThreadLayoutIS7_S1H_fLi4ELi1EEENS_10bfloat16_tEN4cute5tupleIJNS2T_1CILi1EEElNS2V_ILi0EEEEEEEEJNS2N_INS1W_14VisitorComputeINS_10multipliesES2S_fLS2J_2EvEEJNS1W_27VisitorColOrScalarBroadcastIS2R_fNS2U_IJS2W_S2X_S2X_EEEEENS2N_INS30_IS31_ffLS2J_2EvEEJNS1W_27VisitorRowOrScalarBroadcastIS2R_fNS2U_IJS2X_S2W_S2X_EEEEENS1W_15VisitorAccFetchEEEEEEEEEELi1ELi1EEENS4_30GemmIdentityThreadblockSwizzleILi1EEEEEEEvNT_6ParamsE",
+              "us": 489989.54,
+              "pct": 51.06,
+              "calls": 144,
+              "example": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLi"
+            },
+            {
+              "name": "flash::flash_fwd_splitkv_kernel",
+              "us": 362271.27,
+              "pct": 37.75,
+              "calls": 36,
+              "example": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 128, 4, cutlass::bfloat16_t> >, true, false, false, false, true, false, false, false>(flash::Flash_fwd_params)"
+            },
+            {
+              "name": "vllm::dynamic_scaled_int8_quant_kernel",
+              "us": 33581.14,
+              "pct": 3.5,
+              "calls": 144,
+              "example": "void vllm::dynamic_scaled_int8_quant_kernel<c10::BFloat16, float>(c10::BFloat16 const*, signed char*, float*, int)"
+            },
+            {
+              "name": "vllm::act_and_mul_kernel",
+              "us": 25631.41,
+              "pct": 2.67,
+              "calls": 36,
+              "example": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, "
+            },
+            {
+              "name": "vllm::fused_add_rms_norm_kernel",
+              "us": 23279.95,
+              "pct": 2.43,
+              "calls": 72,
+              "example": "std::enable_if<(((8)>(0)))&&vllm::_typeConvert<c10::BFloat16>::exists, void>::type vllm::fused_add_rms_norm_kernel<c10::BFloat16, 8, true>(c10::BFloat16*, long, c10::BFloat16*, c10::BFloat16 const*, float, int, int, long)"
+            },
+            {
+              "name": "vllm::rms_norm_kernel",
+              "us": 13233.52,
+              "pct": 1.38,
+              "calls": 73,
+              "example": "void vllm::rms_norm_kernel<c10::BFloat16, 8, 2, true>(c10::BFloat16*, c10::BFloat16 const*, long, long, long, long, long, c10::BFloat16 const*, long, float, int, int)"
+            },
+            {
+              "name": "vllm::rotary_embedding_kernel",
+              "us": 8454.73,
+              "pct": 0.88,
+              "calls": 36,
+              "example": "void vllm::rotary_embedding_kernel<c10::BFloat16, c10::BFloat16, true>(long const*, c10::BFloat16*, c10::BFloat16*, c10::BFloat16 const*, int, long, long, long, int, int, int, long, bool)"
+            },
+            {
+              "name": "vllm::reshape_and_cache_flash_kernel",
+              "us": 3106.64,
+              "pct": 0.32,
+              "calls": 36,
+              "example": "void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16, (vllm::Fp8KVCacheDataType)0>(__nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, long const*, long, long, long, long, long, int, int, int, float const*, float const*, int)"
+            },
+            {
+              "name": "at::native::vectorized_gather_kernel",
+              "us": 163.4,
+              "pct": 0.02,
+              "calls": 1,
+              "example": "void at::native::vectorized_gather_kernel<16, long>(char*, char*, long*, int, long, long, long, long, bool)"
+            },
+            {
+              "name": "at::native::unrolled_elementwise_kernel",
+              "us": 4.16,
+              "pct": 0.0,
+              "calls": 1,
+              "example": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#4}::operator()() const::{lambda(long)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned in"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "case": "d1",
+    "requests": [
+      {
+        "query_len": 1,
+        "kv_len": 1024,
+        "num_draft_tokens": 0,
+        "chunked": false
+      }
+    ],
+    "median_us": 9743.7763671875,
+    "ranks": [
+      {
+        "num_tokens": 1,
+        "kv_blocks": 65,
+        "routing": "real",
+        "num_local_tokens": 1,
+        "num_tokens_after_padding": 1,
+        "batch_order": [
+          "bench-0"
+        ],
+        "timing_scope": "target_only",
+        "eager_repeat": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_vs_eager": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_deterministic": true,
+        "finite": true,
+        "state_reset_bytes": 7077888,
+        "latency_us": {
+          "timer": "graph_events",
+          "median": 9743.7763671875,
+          "sample_spread_pct": 0.0,
+          "mean": 9782.7734375,
+          "std": 76.98556518554688,
+          "min": 9714.240234375,
+          "p90": 9860.998046875,
+          "count": 3,
+          "samples_us": [
+            9890.3,
+            9743.78,
+            9714.24
+          ]
+        },
+        "profile": {
+          "summary": "/root/rivermind-data/prof/sparse_col/d1.rank0.kernels.json",
+          "span_us": 9430.0,
+          "busy_us": 9399.76,
+          "activities": 939,
+          "top_kernels": [
+            {
+              "name": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLinearShapeILi64ELi128EEELi128ENSG_ILi4ELi8EEELi16EEENS_5ArrayIaLi16ELb0EEELb0ENSD_9NoPermuteEEENS9_25RegularTileAccessIteratorISC_aNSD_37RowMajorTensorOpMultiplicandCrosswiseILi8ELi64EEELi0ESJ_Li16EEELNS_4arch14CacheOperation4KindE1ENSA_INSB_ILi128ELi128EEEaNSD_11ColumnMajorELi0ENSF_INSG_ILi128ELi128EEELi128ENSG_ILi8ELi4EEELi16EEESL_Lb0ESM_EENSO_ISV_aNSD_40ColumnMajorTensorOpMultiplicandCrosswiseILi8ELi128EEELi1ESZ_Li16EEELSU_1EiSE_NSA_INSB_ILi128ELi4EEEjNSD_22ColumnMajorInterleavedILi2EEELi1ENS8_30PitchLinearStripminedThreadMapINSG_ILi256ELi2EEELi128ELi4EEENSK_IjLi4ELb1EEELb0ESM_EENSO_INSB_ILi256ELi2EEEjSW_Li0ES19_Li16EEELSU_1ENS4_15SparseMmaPolicyINS1_4warp17SparseMmaTensorOpINS6_ILi64ELi64ELi128EEEaSQ_aS12_iSE_NS1F_17MmaTensorOpPolicyINSS_9SparseMmaINS6_ILi16ELi8ELi64EEELi32EaSE_aSW_iSE_NSS_21OpMultiplyAddSaturateELNSS_12SPFormatType4KindE0EEENSB_ILi1ELi1EEEEELi1ELb0EbEENSB_ILi0ELi0EEES1S_S1S_Li1EEELi3EbEENS_8epilogue11threadblock28EpilogueWithVisitorCallbacksINS1W_8EpilogueIS7_S1R_Li1ENS1W_22PredicatedTileIteratorINS1W_26OutputTileOptimalThreadMapINS1W_15OutputTileShapeILi128ELi8ELi2ELi1ELi1EEENS21_ILi1ELi8ELi1ELi1ELi8EEELi128ELi4ELi32EEEfLb0ESM_Lb0EEENS1V_4warp24FragmentIteratorTensorOpIS1H_S1K_iNSK_IiLi4ELb1EEESE_EENS26_20TileIteratorTensorOpIS1H_S1K_iSE_EENS1W_18SharedLoadIteratorINS24_18CompactedThreadMapEiLi16EEENS1V_6thread17LinearCombinationIfLi4EiiLNS2F_9ScaleType4KindE0ELNS_15FloatRoundStyleE2EfEENSB_ILi0ELi8EEELi1ELi1EEENS1W_13TreeVisitor2xIN55_GLOBAL__N__4b49866d_22_sparse_int8_mm_sm80_cu_447278ce16ColumnMajorStoreINS1W_22OutputTileThreadLayoutIS7_S1H_fLi4ELi1EEENS_10bfloat16_tEN4cute5tupleIJNS2T_1CILi1EEElNS2V_ILi0EEEEEEEEJNS2N_INS1W_14VisitorComputeINS_10multipliesES2S_fLS2J_2EvEEJNS1W_27VisitorColOrScalarBroadcastIS2R_fNS2U_IJS2W_S2X_S2X_EEEEENS2N_INS30_IS31_ffLS2J_2EvEEJNS1W_27VisitorRowOrScalarBroadcastIS2R_fNS2U_IJS2X_S2W_S2X_EEEEENS1W_15VisitorAccFetchEEEEEEEEEELi1ELi1EEENS4_30GemmIdentityThreadblockSwizzleILi1EEEEEEEvNT_6ParamsE",
+              "us": 7559.95,
+              "pct": 80.47,
+              "calls": 144,
+              "example": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLi"
+            },
+            {
+              "name": "flash::flash_fwd_splitkv_kernel",
+              "us": 391.71,
+              "pct": 4.17,
+              "calls": 36,
+              "example": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 128, 4, cutlass::bfloat16_t> >, false, false, false, false, true, false, true, false>(flash::Flash_fwd_params)"
+            },
+            {
+              "name": "vllm::dynamic_scaled_int8_quant_kernel",
+              "us": 298.19,
+              "pct": 3.17,
+              "calls": 144,
+              "example": "void vllm::dynamic_scaled_int8_quant_kernel<c10::BFloat16, float>(c10::BFloat16 const*, signed char*, float*, int)"
+            },
+            {
+              "name": "Memcpy DtoD (Device -> Device)",
+              "us": 189.2,
+              "pct": 2.01,
+              "calls": 180,
+              "example": "Memcpy DtoD (Device -> Device)"
+            },
+            {
+              "name": "vllm::fused_add_rms_norm_kernel",
+              "us": 183.7,
+              "pct": 1.96,
+              "calls": 72,
+              "example": "std::enable_if<(((8)>(0)))&&vllm::_typeConvert<c10::BFloat16>::exists, void>::type vllm::fused_add_rms_norm_kernel<c10::BFloat16, 8, true>(c10::BFloat16*, long, c10::BFloat16*, c10::BFloat16 const*, float, int, int, long)"
+            },
+            {
+              "name": "flash::flash_fwd_splitkv_combine_kernel",
+              "us": 165.29,
+              "pct": 1.76,
+              "calls": 36,
+              "example": "void flash::flash_fwd_splitkv_combine_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 128, 4, cutlass::bfloat16_t> >, 4, 3, true>(flash::Flash_fwd_params)"
+            },
+            {
+              "name": "vllm::rms_norm_kernel",
+              "us": 141.71,
+              "pct": 1.51,
+              "calls": 73,
+              "example": "void vllm::rms_norm_kernel<c10::BFloat16, 8, 2, true>(c10::BFloat16*, c10::BFloat16 const*, long, long, long, long, long, c10::BFloat16 const*, long, float, int, int)"
+            },
+            {
+              "name": "at::native::vectorized_elementwise_kernel",
+              "us": 139.33,
+              "pct": 1.48,
+              "calls": 144,
+              "example": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<signed char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<signed char>, std::array<char*, 1ul>)"
+            },
+            {
+              "name": "vllm::act_and_mul_kernel",
+              "us": 137.67,
+              "pct": 1.47,
+              "calls": 36,
+              "example": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, "
+            },
+            {
+              "name": "vllm::rotary_embedding_kernel",
+              "us": 106.77,
+              "pct": 1.14,
+              "calls": 36,
+              "example": "void vllm::rotary_embedding_kernel<c10::BFloat16, c10::BFloat16, true>(long const*, c10::BFloat16*, c10::BFloat16*, c10::BFloat16 const*, int, long, long, long, int, int, int, long, bool)"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "case": "d8",
+    "requests": [
+      {
+        "query_len": 1,
+        "kv_len": 1024,
+        "num_draft_tokens": 0,
+        "chunked": false
+      },
+      {
+        "query_len": 1,
+        "kv_len": 1024,
+        "num_draft_tokens": 0,
+        "chunked": false
+      },
+      {
+        "query_len": 1,
+        "kv_len": 1024,
+        "num_draft_tokens": 0,
+        "chunked": false
+      },
+      {
+        "query_len": 1,
+        "kv_len": 1024,
+        "num_draft_tokens": 0,
+        "chunked": false
+      },
+      {
+        "query_len": 1,
+        "kv_len": 1024,
+        "num_draft_tokens": 0,
+        "chunked": false
+      },
+      {
+        "query_len": 1,
+        "kv_len": 1024,
+        "num_draft_tokens": 0,
+        "chunked": false
+      },
+      {
+        "query_len": 1,
+        "kv_len": 1024,
+        "num_draft_tokens": 0,
+        "chunked": false
+      },
+      {
+        "query_len": 1,
+        "kv_len": 1024,
+        "num_draft_tokens": 0,
+        "chunked": false
+      }
+    ],
+    "median_us": 11419.2001953125,
+    "ranks": [
+      {
+        "num_tokens": 8,
+        "kv_blocks": 513,
+        "routing": "real",
+        "num_local_tokens": 8,
+        "num_tokens_after_padding": 8,
+        "batch_order": [
+          "bench-0",
+          "bench-1",
+          "bench-2",
+          "bench-3",
+          "bench-4",
+          "bench-5",
+          "bench-6",
+          "bench-7"
+        ],
+        "timing_scope": "target_only",
+        "eager_repeat": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_vs_eager": {
+          "max_abs": 0.0,
+          "relative_rms": 0.0
+        },
+        "graph_deterministic": true,
+        "finite": true,
+        "state_reset_bytes": 56623104,
+        "latency_us": {
+          "timer": "graph_events",
+          "median": 11419.2001953125,
+          "sample_spread_pct": 0.0,
+          "mean": 11444.3310546875,
+          "std": 62.66648483276367,
+          "min": 11383.2958984375,
+          "p90": 11508.2373046875,
+          "count": 3,
+          "samples_us": [
+            11419.2,
+            11530.5,
+            11383.3
+          ]
+        },
+        "profile": {
+          "summary": "/root/rivermind-data/prof/sparse_col/d8.rank0.kernels.json",
+          "span_us": 11439.09,
+          "busy_us": 11392.75,
+          "activities": 1263,
+          "top_kernels": [
+            {
+              "name": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLinearShapeILi64ELi128EEELi128ENSG_ILi4ELi8EEELi16EEENS_5ArrayIaLi16ELb0EEELb0ENSD_9NoPermuteEEENS9_25RegularTileAccessIteratorISC_aNSD_37RowMajorTensorOpMultiplicandCrosswiseILi8ELi64EEELi0ESJ_Li16EEELNS_4arch14CacheOperation4KindE1ENSA_INSB_ILi128ELi128EEEaNSD_11ColumnMajorELi0ENSF_INSG_ILi128ELi128EEELi128ENSG_ILi8ELi4EEELi16EEESL_Lb0ESM_EENSO_ISV_aNSD_40ColumnMajorTensorOpMultiplicandCrosswiseILi8ELi128EEELi1ESZ_Li16EEELSU_1EiSE_NSA_INSB_ILi128ELi4EEEjNSD_22ColumnMajorInterleavedILi2EEELi1ENS8_30PitchLinearStripminedThreadMapINSG_ILi256ELi2EEELi128ELi4EEENSK_IjLi4ELb1EEELb0ESM_EENSO_INSB_ILi256ELi2EEEjSW_Li0ES19_Li16EEELSU_1ENS4_15SparseMmaPolicyINS1_4warp17SparseMmaTensorOpINS6_ILi64ELi64ELi128EEEaSQ_aS12_iSE_NS1F_17MmaTensorOpPolicyINSS_9SparseMmaINS6_ILi16ELi8ELi64EEELi32EaSE_aSW_iSE_NSS_21OpMultiplyAddSaturateELNSS_12SPFormatType4KindE0EEENSB_ILi1ELi1EEEEELi1ELb0EbEENSB_ILi0ELi0EEES1S_S1S_Li1EEELi3EbEENS_8epilogue11threadblock28EpilogueWithVisitorCallbacksINS1W_8EpilogueIS7_S1R_Li1ENS1W_22PredicatedTileIteratorINS1W_26OutputTileOptimalThreadMapINS1W_15OutputTileShapeILi128ELi8ELi2ELi1ELi1EEENS21_ILi1ELi8ELi1ELi1ELi8EEELi128ELi4ELi32EEEfLb0ESM_Lb0EEENS1V_4warp24FragmentIteratorTensorOpIS1H_S1K_iNSK_IiLi4ELb1EEESE_EENS26_20TileIteratorTensorOpIS1H_S1K_iSE_EENS1W_18SharedLoadIteratorINS24_18CompactedThreadMapEiLi16EEENS1V_6thread17LinearCombinationIfLi4EiiLNS2F_9ScaleType4KindE0ELNS_15FloatRoundStyleE2EfEENSB_ILi0ELi8EEELi1ELi1EEENS1W_13TreeVisitor2xIN55_GLOBAL__N__4b49866d_22_sparse_int8_mm_sm80_cu_447278ce16ColumnMajorStoreINS1W_22OutputTileThreadLayoutIS7_S1H_fLi4ELi1EEENS_10bfloat16_tEN4cute5tupleIJNS2T_1CILi1EEElNS2V_ILi0EEEEEEEEJNS2N_INS1W_14VisitorComputeINS_10multipliesES2S_fLS2J_2EvEEJNS1W_27VisitorColOrScalarBroadcastIS2R_fNS2U_IJS2W_S2X_S2X_EEEEENS2N_INS30_IS31_ffLS2J_2EvEEJNS1W_27VisitorRowOrScalarBroadcastIS2R_fNS2U_IJS2X_S2W_S2X_EEEEENS1W_15VisitorAccFetchEEEEEEEEEELi1ELi1EEENS4_30GemmIdentityThreadblockSwizzleILi1EEEEEEEvNT_6ParamsE",
+              "us": 7535.33,
+              "pct": 66.12,
+              "calls": 144,
+              "example": "_ZN7cutlass6KernelINS_4gemm6kernel29SparseGemmWithEpilogueVisitorINS1_11threadblock19SparseMmaMultistageINS1_9GemmShapeILi128ELi128ELi128EEENS_9transform11threadblock28PredicatedTileAccessIteratorINS_11MatrixShapeILi128ELi64EEEaNS_6layout8RowMajorELi1ENS8_29PitchLinearWarpRakedThreadMapINS_16PitchLi"
+            },
+            {
+              "name": "flash::flash_fwd_splitkv_kernel",
+              "us": 1988.12,
+              "pct": 17.45,
+              "calls": 36,
+              "example": "void flash::flash_fwd_splitkv_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 128, 4, cutlass::bfloat16_t> >, false, false, false, false, true, false, true, false>(flash::Flash_fwd_params)"
+            },
+            {
+              "name": "Memcpy DtoD (Device -> Device)",
+              "us": 299.51,
+              "pct": 2.63,
+              "calls": 288,
+              "example": "Memcpy DtoD (Device -> Device)"
+            },
+            {
+              "name": "vllm::dynamic_scaled_int8_quant_kernel",
+              "us": 298.96,
+              "pct": 2.62,
+              "calls": 144,
+              "example": "void vllm::dynamic_scaled_int8_quant_kernel<c10::BFloat16, float>(c10::BFloat16 const*, signed char*, float*, int)"
+            },
+            {
+              "name": "at::native::vectorized_elementwise_kernel",
+              "us": 278.67,
+              "pct": 2.45,
+              "calls": 288,
+              "example": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<signed char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<signed char>, std::array<char*, 1ul>)"
+            },
+            {
+              "name": "vllm::fused_add_rms_norm_kernel",
+              "us": 181.5,
+              "pct": 1.59,
+              "calls": 72,
+              "example": "std::enable_if<(((8)>(0)))&&vllm::_typeConvert<c10::BFloat16>::exists, void>::type vllm::fused_add_rms_norm_kernel<c10::BFloat16, 8, true>(c10::BFloat16*, long, c10::BFloat16*, c10::BFloat16 const*, float, int, int, long)"
+            },
+            {
+              "name": "vllm::rms_norm_kernel",
+              "us": 159.53,
+              "pct": 1.4,
+              "calls": 73,
+              "example": "void vllm::rms_norm_kernel<c10::BFloat16, 8, 2, true>(c10::BFloat16*, c10::BFloat16 const*, long, long, long, long, long, c10::BFloat16 const*, long, float, int, int)"
+            },
+            {
+              "name": "vllm::act_and_mul_kernel",
+              "us": 158.73,
+              "pct": 1.39,
+              "calls": 36,
+              "example": "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &(c10::BFloat16 vllm::silu_kernel<c10::BFloat16>(c10::BFloat16 const&, float)), &(__nv_bfloat162 vllm::packed_silu_kernel<__nv_bfloat162>(__nv_bfloat162 const&, float)), true, true, false, false>(c10::BFloat16*, c10::BFloat16 const*, int, "
+            },
+            {
+              "name": "flash::flash_fwd_splitkv_combine_kernel",
+              "us": 156.13,
+              "pct": 1.37,
+              "calls": 36,
+              "example": "void flash::flash_fwd_splitkv_combine_kernel<Flash_fwd_kernel_traits<128, 64, 128, 4, false, false, cutlass::bfloat16_t, Flash_kernel_traits<128, 64, 128, 4, cutlass::bfloat16_t> >, 4, 1, true>(flash::Flash_fwd_params)"
+            },
+            {
+              "name": "at::native::elementwise_kernel",
+              "us": 146.11,
+              "pct": 1.28,
+              "calls": 72,
+              "example": "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#12}::operator()() const::{lambda(c10::BFloat16)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at"
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

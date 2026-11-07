@@ -1,0 +1,27 @@
+{
+  "accuracy": 0.015163002274450341,
+  "invalid_rate": 0.027293404094010616,
+  "latency": 230.23734413832426,
+  "questions_per_second": 5.728870809105399,
+  "total_output_tokens": 278215,
+  "tokens_per_second": 1208.3834663800294,
+  "num_questions": 1319,
+  "num_shots": 5,
+  "max_tokens": 256,
+  "timestamp": 1794037749.1569743,
+  "request_params": {
+    "endpoint": "completions",
+    "model": "/root/obr_ckpt/int8_24_obr",
+    "temperature": 0.0,
+    "top_p": null,
+    "top_k": null,
+    "seed": 42,
+    "stop": [
+      "Question",
+      "Assistant:",
+      "<|separator|>"
+    ],
+    "reasoning_effort": null,
+    "chat_template_kwargs": null
+  }
+}
