@@ -114,7 +114,7 @@ from vllm.v1.outputs import ModelRunnerOutput
 from vllm.v1.request import Request, RequestStatus
 from vllm.v1.serial_utils import MsgpackDecoder, MsgpackEncoder, bytestr
 from vllm.v1.structured_output import StructuredOutputManager
-from vllm.v1.utils import compute_iteration_details
+from vllm.v1.utils import compute_iteration_details, record_function_or_nullcontext
 from vllm.version import __version__ as VLLM_VERSION
 
 logger = init_logger(__name__)
@@ -778,8 +778,14 @@ class EngineCore:
         model_executed = False
         deferred_scheduler_output = None
         if self.scheduler.has_requests():
-            scheduler_output = self.scheduler.schedule(self._should_throttle_prefills())
-            with self.log_error_detail(scheduler_output):
+            with record_function_or_nullcontext("core: schedule"):
+                scheduler_output = self.scheduler.schedule(
+                    self._should_throttle_prefills()
+                )
+            with (
+                self.log_error_detail(scheduler_output),
+                record_function_or_nullcontext("core: execute_model"),
+            ):
                 exec_future = self.model_executor.execute_model(
                     scheduler_output, non_block=True
                 )
@@ -796,9 +802,10 @@ class EngineCore:
                     grammar_output = self.scheduler.get_grammar_bitmask(
                         scheduler_output
                     )
-                    future = self.model_executor.sample_tokens(
-                        grammar_output, non_block=True
-                    )
+                    with record_function_or_nullcontext("core: sample_tokens"):
+                        future = self.model_executor.sample_tokens(
+                            grammar_output, non_block=True
+                        )
                 else:
                     # We need to defer sampling until we have processed the model output
                     # from the prior step.
@@ -825,6 +832,7 @@ class EngineCore:
         with (
             self.capture_iteration_details(scheduler_output) as iteration_details,
             self.log_error_detail(scheduler_output),
+            record_function_or_nullcontext("core: wait_output"),
         ):
             model_output = self._wait_for_output(future)
             if model_output is None:
@@ -836,9 +844,10 @@ class EngineCore:
         # Before processing the model output, process any aborts that happened
         # during the model execution.
         self._process_aborts_queue()
-        engine_core_outputs = self.scheduler.update_from_output(
-            scheduler_output, model_output
-        )
+        with record_function_or_nullcontext("core: update_from_output"):
+            engine_core_outputs = self.scheduler.update_from_output(
+                scheduler_output, model_output
+            )
         self._attach_iteration_details(engine_core_outputs, iteration_details)
         self._attach_weight_version(engine_core_outputs)
 

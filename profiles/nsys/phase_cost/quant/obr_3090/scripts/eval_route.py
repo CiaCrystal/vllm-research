@@ -8,6 +8,8 @@ SP = ["--linear-backend", "cutlass_sparse"]
 ROUTES = {"bf16": (HF, []), "int8": (f"{W}/ckpt/int8_dense", []), "int8_nocomp": (f"{W}/ckpt/int8_24_nocomp", []),
           "int8_obr": ("/root/obr_ckpt/int8_24_obr", []), "int4_obr": ("/root/obr_ckpt/int4_24_obr", []),
           "int8_obr_sparse": ("/root/obr_ckpt/int8_24_obr", SP),
+          "int8_obr_selfgen": (f"{W}/ckpt/int8_24_obr_selfgen", []), "int4_obr_selfgen": (f"{W}/ckpt/int4_24_obr_selfgen", []),
+          "int8_obr_mix": (f"{W}/ckpt/int8_24_obr_mix", []), "int4_obr_mix": ("/root/obr_ckpt/int4_24_obr_mix", []),
           "float_obr": (f"{W}/ckpt/float_obr", []), "float_nocomp": (f"{W}/ckpt/float_nocomp", [])}
 CONFIGS = {"A": (256, 33, 1), "D": (1024, 33, 8), "F": (256, 129, 8)}
 ap = argparse.ArgumentParser()

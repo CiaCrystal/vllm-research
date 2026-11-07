@@ -1,0 +1,208 @@
+{
+ "bf16_8192cube": {
+  "M": 8192,
+  "N": 8192,
+  "K": 8192,
+  "metric": "tflops",
+  "median": 77.8,
+  "max": 78.3,
+  "trials": [
+   77.3,
+   77.8,
+   78.3
+  ]
+ },
+ "int8_cutlass_8192cube": {
+  "M": 8192,
+  "N": 8192,
+  "K": 8192,
+  "metric": "tops",
+  "median": 211.5,
+  "max": 221.1,
+  "trials": [
+   221.1,
+   209.0,
+   211.5
+  ]
+ },
+ "int8_torch_int_mm_8192cube": {
+  "M": 8192,
+  "N": 8192,
+  "K": 8192,
+  "metric": "tops",
+  "median": 235.2,
+  "max": 238.4,
+  "trials": [
+   238.4,
+   235.1,
+   235.2
+  ]
+ },
+ "int8_sparse24_8192cube": {
+  "M": 8192,
+  "N": 8192,
+  "K": 8192,
+  "metric": "dense_equiv_tops",
+  "median": 252.5,
+  "max": 266.8,
+  "trials": [
+   266.8,
+   249.4,
+   252.5
+  ]
+ },
+ "bf16_gate_up_8192": {
+  "M": 8192,
+  "N": 24576,
+  "K": 4096,
+  "metric": "tflops",
+  "median": 76.2,
+  "max": 76.5,
+  "trials": [
+   75.7,
+   76.2,
+   76.5
+  ]
+ },
+ "int8_cutlass_gate_up_8192": {
+  "M": 8192,
+  "N": 24576,
+  "K": 4096,
+  "metric": "tops",
+  "median": 189.5,
+  "max": 195.7,
+  "trials": [
+   195.7,
+   189.5,
+   181.6
+  ]
+ },
+ "int8_torch_int_mm_gate_up_8192": {
+  "M": 8192,
+  "N": 24576,
+  "K": 4096,
+  "metric": "tops",
+  "median": 208.5,
+  "max": 209.1,
+  "trials": [
+   205.5,
+   208.5,
+   209.1
+  ]
+ },
+ "int8_sparse24_gate_up_8192": {
+  "M": 8192,
+  "N": 24576,
+  "K": 4096,
+  "metric": "dense_equiv_tops",
+  "median": 210.3,
+  "max": 213.3,
+  "trials": [
+   213.3,
+   210.3,
+   210.2
+  ]
+ },
+ "bf16_down_8192": {
+  "M": 8192,
+  "N": 4096,
+  "K": 12288,
+  "metric": "tflops",
+  "median": 74.4,
+  "max": 74.4,
+  "trials": [
+   72.7,
+   74.4,
+   74.4
+  ]
+ },
+ "int8_cutlass_down_8192": {
+  "M": 8192,
+  "N": 4096,
+  "K": 12288,
+  "metric": "tops",
+  "median": 215.3,
+  "max": 237.2,
+  "trials": [
+   237.2,
+   209.7,
+   215.3
+  ]
+ },
+ "int8_torch_int_mm_down_8192": {
+  "M": 8192,
+  "N": 4096,
+  "K": 12288,
+  "metric": "tops",
+  "median": 231.0,
+  "max": 231.2,
+  "trials": [
+   227.2,
+   231.0,
+   231.2
+  ]
+ },
+ "int8_sparse24_down_8192": {
+  "M": 8192,
+  "N": 4096,
+  "K": 12288,
+  "metric": "dense_equiv_tops",
+  "median": 252.7,
+  "max": 281.4,
+  "trials": [
+   281.4,
+   250.6,
+   252.7
+  ]
+ },
+ "copy_1GiB": {
+  "bytes": 2147483648,
+  "metric": "gbps",
+  "median": 844.5,
+  "max": 844.7,
+  "trials": [
+   830.9,
+   844.5,
+   844.7
+  ]
+ },
+ "fill_1GiB": {
+  "bytes": 1073741824,
+  "metric": "gbps",
+  "median": 890.4,
+  "max": 890.4,
+  "trials": [
+   890.4,
+   890.3,
+   890.4
+  ]
+ },
+ "sum_read_1GiB": {
+  "bytes": 1073741824,
+  "metric": "gbps",
+  "median": 887.0,
+  "max": 887.0,
+  "trials": [
+   887.0,
+   886.6,
+   887.0
+  ]
+ },
+ "gemv_bf16_gate_up": {
+  "bytes": 201326592,
+  "metric": "gbps",
+  "median": 826.3,
+  "max": 829.3,
+  "trials": [
+   829.3,
+   818.4,
+   826.3
+  ]
+ },
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "sms": 82,
+  "mem_gib": 23.55877685546875,
+  "l2_mb": 6.0
+ }
+}

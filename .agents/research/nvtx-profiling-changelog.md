@@ -10,8 +10,9 @@
 | ---- | ---- |
 | 分支 | `research/nvtx-profiling` |
 | 基线提交 | `d038985573`（Ignore local profiling artifacts） |
-| 提交状态 | CHG-011 及之前由用户提交并 push（`e26b649a68`）。CHG-012 至 CHG-016 由用户要求提交并 push |
+| 提交状态 | CHG-011 及之前由用户提交并 push（`e26b649a68`）。CHG-012 至 CHG-021 由用户要求提交并 push |
 | 审阅状态 | 用户已于 2026-11-06 接受 CHG-001 至 CHG-004 |
+| 方向（2026-11-07） | OBR 2:4 稀疏实验在 CHG-020 结束，后续工作围绕 bf16 展开。3090 服务器上的量化 checkpoint 已删除，见 CHG-021 |
 | 功能 | `VLLM_NVTX_ENABLE=1` 时输出 `Step/{Prefill,Decode,Mixed}` 和 `{阶段}/Layer_NN/{Attention,FFN}` |
 | 已验证模型 | Qwen3-0.6B（28 层），`Qwen/Qwen3-0.6B`，已在本地 HF 缓存 |
 | 最近一次测量 | 2026-11-06，eager 见 CHG-006，非 eager 基线和量化可行性见 CHG-007，量化对比见 CHG-008，TTFT 和 TPOT 见 CHG-009，OBR 可行性见 CHG-010，OBR 精度和稀疏 kernel 见 CHG-011。报告在 `profiles/nsys/phase_cost/report.md`、`profiles/nsys/phase_cost/noneager/report.md`、`profiles/nsys/phase_cost/quant/report.md` 、`profiles/nsys/phase_cost/quant/sparsity/report.md` 和 `profiles/nsys/phase_cost/quant/obr_3090/report.md` |
@@ -122,7 +123,24 @@ export LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/lib/wsl/drivers/nv_dispi.inf_amd64_
 60. **困惑度可以直接在 `vllm serve` 里算。** `/v1/completions` 带 `prompt_logprobs: 0`、`max_tokens: 1`，第一项是 None 要跳过。`--max-model-len 2048` 时每段最多 2047 token。这条路径带激活量化，和 HF 浮点激活的旧数据不是同一口径。
 61. **更正第 57、58 条：8B 的 OBR 第一版有符号错误。** 剪掉部分的误差应为 `-w`，写成了 `+w`，补偿方向相反。修复后 INT8 + 2:4 + OBR 的 GSM8K 是 44.43%，困惑度 11.97，不是 1%～2%。和直接解对比目标函数检查不出这种错，因为两边用的是同一个误差向量。要用“补偿后误差 < 只剪枝误差”来断言。
 62. **查这类问题先比校准集上的层输出误差。** 校准集上比无补偿还差，就是实现错，不用再怀疑过拟合或激活量化。脚本在 `profiles/nsys/phase_cost/quant/obr_3090/scripts/obr_diag.py`。
+63. **torch profiler 能看到 CUDA Graph 里的 kernel。** 和 nsys 默认的整图模式（第 17 条）不同，Kineto 把图内 kernel 逐个记下来，用 `cudaGraphLaunch` 的 `correlation` 关联。3090 上 Decode 全部 32/32、128/128 步走图，每层 kernel 都在。
+64. **`vllm serve` 的前端（AsyncLLM）trace 是空的。** `with_stack=false` 时文件只有 858 字节、0 个事件，`output_handler` 里加的 `record_function` 也没有记下。推测是因为前端 profiler 在 `asyncio.to_thread` 的线程里启动，没有验证。HTTP、detokenize 只能用时间差推算。
+65. **trace 的 `ts`（µs）加 `baseTimeNanoseconds/1000` 就是墙钟。** 和同一台机器上客户端的 `time.time_ns()` 能直接对齐。实测从 `/resume` 到第一次 `schedule` 是 1.1～2.4 ms，没有出现负值。
+66. **V2 runner 和 EngineCore 原本没有 profiler 作用域。** `VLLM_CUSTOM_SCOPES_FOR_PROFILING=1` 只打开调度器里的 3 个作用域，看不出 schedule、sample_tokens、输入准备各花多少。CHG-017 加了 `core: *`、`runner: prepare_inputs`、`frontend: process_outputs`，同样受这个环境变量控制。
+67. **serve 和 `vllm bench forward` 的非线性 kernel 不一样。** serve 里 norm、rotary、激活是 Inductor 生成的 Triton kernel，bench forward 用的是 `vllm::rms_norm_kernel` 等自定义算子，两边的非线性部分不能逐项比。Triton kernel 的名字会带上所有融合进去的算子，例如 `triton_red_fused_dynamic_scaled_int8_quant_fused_add_rms_norm`，但真正的 INT8 量化仍是独立的 `vllm::dynamic_scaled_int8_quant_kernel`，每层 4 个。按子串 `int8_quant` 归类会把 norm 算成量化。
+68. **torch profiler 会放大 CPU 受限的 Prefill。** INT8 的 A：开 profiler 时 TTFT 39～50 ms，不开时 31.6 ms（CHG-015）。bf16 的 A 是 GPU 受限，只多约 1 ms。TPOT 的差异都在 1% 以内。
+69. **3090 实测上限和白皮书对不上，原因是时钟和功耗。** bf16 负载下 SM 时钟是 1935 MHz，白皮书按 1695 MHz 计算，所以实测 77.8 TFLOPS 高于 71。INT8 撞上 350 W 功耗墙（throttle reason 0x4），时钟降到 1425～1650 MHz，实测只有 211～235 TOPS，是 284 的 74%～83%。显存时钟报 9501 MHz，即 19.0 Gbps，理论 912 GB/s，实测读带宽 887 GB/s。
+70. **`*.kernels.json` 按 kernel 名合并，分不出 qkv、o、gate_up、down。** 要分投影，得读原始 trace，按层内顺序归类（第 19 条），脚本在 `obr_3090/scripts/roofline_kernels.py`。注意 `reshape_and_cache_flash_kernel` 的名字里有 `flash`，要先于注意力判断。
+71. **刚写完的小张量会留在 L2，按显存字节算出的带宽可能超过 100%。** 例如 t256 的 `down` 激活量化，输入 6.3 MB，L2 是 6 MB，算出来是 109%。小形状的“带宽占比”只能当上限参考。
+72. **8B 上 2:4 的精度主要被校准数据卡住。** 把 WikiText 换成模型自己按评测格式解 GSM8K 训练题生成的文本后，INT8 + 2:4 + OBR 的 GSM8K 从 44.43% 升到 81.20%，INT4 从 19.56% 升到 69.90%。代价是 WikiText 困惑度从 11.97 升到 21.24。校准数据的领域决定了补偿保住哪种能力，评估要同时看目标任务和通用困惑度。
+73. **自生成校准的窗口开头就是评测用的 5 道例题（`train[:5]`）。** 校准分布和评测提示词的前缀完全相同，题目本身不同（训练集对测试集）。这让 GSM8K 结果偏乐观，换其他任务时不能期望同样的提升。
+74. **混合校准能兼顾两头。** 64 个 WikiText 窗口加 64 个自生成窗口：INT8 + 2:4 + OBR 的 GSM8K 77.41%，困惑度 12.85，比纯 WikiText 版只高 0.88，GSM8K 比纯自生成版只低 3.79 个百分点。追求 GSM8K 用纯自生成，追求通用性用混合。
 
+72. **`pgrep -f "[s]tress_bf16.py"` 照样会匹配到自己。** 坑 53 的 `[x]` 写法只在命令行里没有原样文件名时才管用。同一条远程命令里还有 `gunzip > stress_bf16.py`，`pgrep` 把当前 shell 也匹配了，`kill` 掉了 ssh 会话，留下一个孤儿 `vllm serve`。长任务用脚本文件启动，记下 pid 或进程组，按 pid 杀（`kill -TERM -<pgid>`）。
+73. **`/proc/<pid>/stat` 的进程名只有 15 个字符。** EngineCore 显示为 `VLLM::EngineCor`，按 `EngineCore` 匹配会找不到，导致把自己的 EngineCore 当成外来的 GPU 进程。
+74. **`--max-num-batched-tokens` 会改变 KV 容量。** 同样是 `--gpu-memory-utilization 0.85`，bf16 Qwen3-8B 在 8192 时 KV 是 23,552 token，2048 时是 20,480 token，原因未查。比较分块大小时要同时报告 KV 容量。
+75. **闭环压测加固定长度，请求会成波次到达。** 一波同时结束，下一波同时到达，整波一起 Prefill，TTFT 和最大 ITL 偏大（并发 16 时 TTFT P50 1.71 s，就是一次 8192 token 的 Prefill）。看 TTFT 和 SLO 要用 Poisson 到达的结果。
+76. **`--max-num-batched-tokens` 不小于 prompt 长度时，单个 Prefill 不会被切开。** 1024 token 的 prompt 在 2048 下仍是一整块，Decode 照样被卡约 235～260 ms。要减少卡顿，块要小于 prompt。
 ## 设计决定
 
 | 决定 | 原因 |
@@ -421,6 +439,117 @@ export LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/lib/wsl/drivers/nv_dispi.inf_amd64_
 - 验证：
   - 第 1 块逐层断言通过，补偿后误差是只剪枝的 23%～44%。36 块和 3 条评测都跑完。
   - 未验证：修复后的端到端测时（速度和权重数值无关，沿用之前的数据）；60 次迭代下 PCG 和精确解的差距。`ruff`、`pre-commit`、`pytest` 未运行。
+- 状态：已提交并 push
+
+### CHG-017：Qwen3-8B 在 RTX 3090 上的 roofline 和 serving 开销拆解，新增 EngineCore 和 V2 runner 的 profiler 作用域
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：
+  - `vllm/v1/engine/core.py`：`step_with_batch_queue` 加 `core: schedule / execute_model / sample_tokens / wait_output / update_from_output`。
+  - `vllm/v1/worker/gpu/model_runner.py`：加 `runner: prepare_inputs`（包住 `prepare_inputs` 和 `prepare_attn`）。
+  - `vllm/v1/engine/async_llm.py`：加 `frontend: process_outputs`。
+  - 新增脚本 `profiles/nsys/phase_cost/quant/obr_3090/scripts/{roof,roofline_kernels,roofline_plot,prof_serve,serve_breakdown,serve_tables}.py`。
+  - 结果在 `profiles/nsys/phase_cost/quant/obr_3090/profiling/`（`report.md` 和小的 CSV、JSON、SVG）。
+- 内容：
+  - 作用域都用已有的 `record_function_or_nullcontext`，只有 `VLLM_CUSTOM_SCOPES_FOR_PROFILING=1` 时生效，默认是 `nullcontext`。不改调度和计算逻辑。`step()`（非批队列路径）没有加。
+  - 服务器上用 `patch -p1 -b -z .orig_scopes` 打了同样的补丁，原文件备份为 `*.orig_scopes`。
+  - 「不要重新踩的坑」新增第 63 至 71 条。
+- 原因：用户要求只用 torch profiler 拆解 Qwen3-8B 的瓶颈、开销和 roofline。不开 stack 时，V2 路径上看不到调度、采样和输入准备的 CPU 时间（坑 66）。
+- 结果（详见报告）：
+  - 实测上限：bf16 77.8 TFLOPS（白皮书 71，SM 时钟 1935 MHz），INT8 211～235 TOPS（白皮书 284，受 350 W 功耗墙限制），稀疏等效 252 TOPS，读带宽 887 GB/s（白皮书 936）。
+  - Decode 受显存带宽限制，GPU 忙碌占周期 99% 以上。离带宽下限：bf16 1.19～1.21 倍，INT8 1.36～1.39 倍，稀疏 1.71～1.77 倍。差距的大头是线性层带宽利用率（bf16 81%～94%，INT8 70%～87%，稀疏 47%～77%）。
+  - Prefill：D、F 和 bf16 的 A 受算力限制；INT8、稀疏的 A 受 CPU 发射限制。
+  - `lm_head` 在所有路线都是 bf16，每步 1.40～1.43 ms，占 INT8、稀疏 TPOT 的 10%～13%。
+- 验证：
+  - 3 条路线 × A、D、F 各 3 次请求都完成，usage 断言通过。Decode 全部走 CUDA Graph。
+  - 客户端 TPOT 和引擎周期在 A、F 中相差 ≤0.05 ms；Decode 前向 GPU 时间和 `bench forward` 相差 ≤2%；带宽下限的分项和与实际差相差 ≤0.03 ms。
+  - 本地对 3 个 Python 文件做了 `ast.parse`，服务器上 import 成功，serve 正常运行。
+  - 未验证：作用域的开销（只开 profiler 时生效）；`step()` 路径；前端作用域（前端 trace 为空，坑 64）。`ruff`、`pre-commit`、`pytest` 未运行。
+- 状态：已提交并 push
+
+### CHG-018：按 decoder 层拆分 kernel 时间
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：`profiles/nsys/phase_cost/quant/obr_3090/scripts/layer_breakdown.py`（新增）、`profiling/layer_breakdown.csv`、`profiling/report.md`（新增 2.3 节）、本文件。vLLM 源码未改动。
+- 内容：复用 `forward/` 的 bench trace（本地副本），按层号和层内顺序拆分 bf16、INT8、稀疏的 d1、d8、t256、t8192 等 case。没有新的 GPU 测量。
+- 原因：用户要求分析各层的性能。
+- 结果：
+  - 36 层耗时几乎相同，第 1～35 层的变异系数 ≤0.9%，没有慢层。
+  - 第 0 层多 1%～7.5%，来自输入拷贝和补齐、未融合的输入 RMSNorm，以及第一个 qkv GEMM 慢 3～6 µs（推测是冷 L2，未验证）。
+  - Decode 每层的 FFN 块占 55%～73%。Prefill t8192 时，INT8 和稀疏的 Attention 块占 52%～54%。
+  - 每层离下限：Decode 1.20～1.85 倍，Prefill 1.15～1.60 倍。
+- 验证：每个 case 的 36 层之和与第 2 节的整模型合计一致（如 bf16 d1 为 18.95 ms，t8192 为 1962.3 ms）。`ruff` 未运行。
+- 状态：已提交并 push
+
+### CHG-019：用自生成 GSM8K 数据校准 8B 的 OBR
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：`profiles/nsys/phase_cost/quant/obr_3090/scripts/gen_calib.py`（新增）、`scripts/obr_8b.py`（新增 `--calib`、`--root`、`--tag`）、`scripts/eval_route.py`（新增两条路线）、`eval/*selfgen*`、`eval/calib_selfgen.json`、`logs/selfgen.*`、`logs/obr_selfgen.log`、`report.md`、本文件。vLLM 源码未改动。
+- 内容：
+  - bf16 Qwen3-8B 用 GSM8K 评测的格式（`train[:5]` 作为 5 道例题，贪心，最多 256 token，遇 `Question` 停止），在 vLLM 里解答 `train[5:1205]`，平均 115 token。每个 2048 token 的窗口以 5 道例题（658 token）开头，后接生成的“题目 + 解答”，共 128 个窗口，用了 1078 对。生成的解答没有按对错筛选。
+  - 其余设置和 CHG-016 相同（WANDA 掩码、PCG 60 次、逐块级联、INT8 和 INT4 共用一条链）。
+  - 「不要重新踩的坑」新增第 72、73 条。
+  - 这次由守卫脚本等 GPU 空闲后自动启动。profiling 停顿 8 分钟时被误判为结束，好在 profiling 当时已经完成，没有实际冲突。
+- 原因：用户要求先回答“校准数据对不对路”，文献依据是 RESP（arXiv:2512.02185）和 SSGR（arXiv:2511.18864）。
+- 结果：
+  - INT8 + 2:4 + OBR：GSM8K 81.20%（1071/1319），WikiText 困惑度 21.24。WikiText 校准版是 44.43%、11.97。
+  - INT4 + 2:4 + OBR：GSM8K 69.90%（922/1319），困惑度 28.29。WikiText 校准版是 19.56%、14.14。
+  - 相对 bf16（88.55%）下降 7.35 个百分点，仍未达到 5 个百分点的标准，但差距从 44 个百分点缩小到 7 个。
+  - 单层相对误差（INT8）：第 1 块 0.0026，中段最高约 0.018，末块 0.008。
+- 验证：
+  - 生成、OBR 和两条评测都跑完，rc=0。回答抽查是通顺、算式正确的解题过程。
+  - 未验证：稀疏 kernel 在这个 checkpoint 上的精度（没有跑 `int8_obr_selfgen` + `cutlass_sparse`）；混合校准数据；其他任务上的泛化。这次只测了 1 次，没有重复。`ruff`、`pre-commit`、`pytest` 未运行。
+- 状态：已提交并 push
+
+### CHG-020：混合校准数据（WikiText + 自生成 GSM8K）
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：`profiles/nsys/phase_cost/quant/obr_3090/scripts/mix_calib.py`（新增）、`scripts/obr_8b.py`（新增 `--root4`）、`scripts/eval_route.py`、`eval/*_mix.*`、`logs/mix.*`、`logs/obr_mix.log`、`report.md`、本文件。vLLM 源码未改动。
+- 内容：
+  - 校准数据为 `obr_8b.py` 的 WikiText 窗口前 64 个（种子相同）加 `calib_selfgen.pt` 前 64 个，共 128 个。其余设置和 CHG-019 相同。
+  - 为腾出磁盘，删除了服务器上的 `$W/ckpt/int8_24_nocomp`（可在 2 分钟内用 `quick_ckpt.py` 重新生成）。INT4 写到系统盘 `/root/obr_ckpt/int4_24_obr_mix`。
+  - 「不要重新踩的坑」新增第 74 条。
+- 原因：用户要求试混合校准，以兼顾 GSM8K 和通用困惑度。
+- 结果：
+  - INT8 + 2:4 + OBR：GSM8K 77.41%（1021/1319），困惑度 12.85。
+  - INT4 + 2:4 + OBR：GSM8K 63.38%（836/1319），困惑度 15.14。
+  - 对比纯 WikiText（44.43%、11.97）和纯自生成（81.20%、21.24）：困惑度几乎回到纯 WikiText 的水平，GSM8K 保留了纯自生成提升的 90%。
+- 验证：
+  - OBR 和两条评测都跑完，rc=0。只测了 1 次。
+  - 未验证：混合比例的其他取值；稀疏 kernel 在这个 checkpoint 上的精度。`ruff`、`pre-commit`、`pytest` 未运行。
+- 状态：已提交并 push
+
+### CHG-019：bf16 压测：并发扫描、KV 满载、持续到达、分块对照和前端
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：`profiles/nsys/phase_cost/quant/obr_3090/scripts/stress_bf16.py`、`scripts/stress_summary.py`（新增）、`profiling/stress_summary.csv`、`profiling/report.md`（新增第 7 节）、本文件。vLLM 源码未改动。
+- 内容：
+  - 驱动等 GPU 空闲后自动开始（连续 3 次无计算进程），每个服务配置启动一次 `vllm serve`，用 `vllm bench serve` 跑各组合 3 次。同时以 0.5 s 间隔采集 `/metrics` 和 API 服务进程、EngineCore、客户端的 CPU，每 2 秒检查 GPU 上有没有外来进程。
+  - 「不要重新踩的坑」新增第 72 至 76 条。
+- 原因：用户要求压测：并发从 8 往上的吞吐、TPOT 和拐点，KV 用满后的抢占和排队，持续到达时 Prefill 对 Decode 的干扰，TTFT、TPOT 的 P95、P99 和 SLO，以及高并发流式下前端是否成为瓶颈。
+- 结果（详见报告第 7 节）：
+  - 吞吐拐点在并发 32（607 tok/s，并发 1 的 12.9 倍）。并发 ≥48 时 KV 100%，运行中封顶 44 个，3 次抢占 94～213 次，吞吐降到 541～553 tok/s，TPOT P99 超过 100 ms。
+  - 长上下文（1536/384）只能同时运行 15 个，并发 32 时平均排队 14.8 s，TTFT P99 32 s。
+  - Poisson 到达（1024/128）的服务能力约 2.2 req/s。ITL P95 在 2 req/s 起是 233～260 ms，等于一次 1024 token 的 Prefill。SLO-A（TTFT ≤1 s 且 TPOT ≤50 ms）达标率在 1、2、3 req/s 时分别为 100%、71.7%、3.3%。
+  - `--max-num-batched-tokens 2048` 没有改善卡顿（见坑 76），3～4 req/s 的吞吐低 6.5%～8.5%，且 KV 少 13%。
+  - 前端不是瓶颈：API 服务进程 CPU 平均 ≤10%、峰值 ≤28% 单核，因为 bf16 的流式输出最多只有约 600 tok/s。
+- 验证：
+  - 48 次压测全部 rc=0、failed=0，没有外来 GPU 进程。
+  - c1 的引擎侧 ITL 20.4 ms 与客户端 20.3 ms 一致，也和第 3 节 profiling 的 TPOT 20.3 ms 一致。
+  - 第一次启动因为坑 72、73 中止，已删除，没有混进结果。
+  - 未验证：KV 满后吞吐下降中重算 Prefill 的占比；块 ≤512 的效果；`gpu-memory-utilization` 0.95；更高 token 速率下的前端。`ruff` 未运行。
+- 状态：已提交并 push
+
+### CHG-021：结束 OBR 实验，清理 3090 服务器
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：本文件、`profiles/nsys/phase_cost/quant/obr_3090/report.md`。源码未改动。
+- 内容：
+  - 用户决定 OBR 2:4 稀疏实验到此为止，后续围绕 bf16 展开。
+  - 删除了服务器上的全部量化 checkpoint：`$W/ckpt/` 下 4 个、`/root/obr_ckpt/` 下 3 个，共约 63GB。还删除了已备份到本地的 `eval`、`eval_signbug`、`res`、`prof` 和 `/tmp` 下的传输包。
+  - 服务器保留（`W=/root/rivermind-data`）：`hf`（Qwen3-8B bf16）、`vllm`（venv 和打过补丁的代码，含 `_sparse_int8_sm80.so` 和 CHG-017 的作用域补丁）、`data`（WikiText2、GSM8K、`calib_*.pt`）、`obr/scripts`、`logs`、`roofline`、`stress`、`env.sh`。
+  - 清理后系统盘剩 29GB，数据盘剩 44GB。
+- 重新生成：量化 checkpoint 可以用 `scripts/quick_ckpt.py`（约 2 分钟）和 `scripts/obr_8b.py --calib ...`（约 22 分钟）重建，校准数据还在 `$W/data/`。
 - 状态：已提交并 push
 
 ## 验证结果

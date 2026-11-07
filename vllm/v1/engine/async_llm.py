@@ -75,6 +75,7 @@ from vllm.v1.metrics.loggers import (
 )
 from vllm.v1.metrics.prometheus import shutdown_prometheus
 from vllm.v1.metrics.stats import IterationStats
+from vllm.v1.utils import record_function_or_nullcontext
 
 logger = init_logger(__name__)
 
@@ -916,12 +917,15 @@ class AsyncLLM(EngineClient):
                             renderer.queue_mm_cache_invalidations(missing_hashes)
 
                         # 2) Process EngineCoreOutputs.
-                        processed_outputs = output_processor.process_outputs(
-                            outputs_slice,
-                            outputs.timestamp,
-                            iteration_stats,
-                            weight_version=outputs.weight_version,
-                        )
+                        with record_function_or_nullcontext(
+                            "frontend: process_outputs"
+                        ):
+                            processed_outputs = output_processor.process_outputs(
+                                outputs_slice,
+                                outputs.timestamp,
+                                iteration_stats,
+                                weight_version=outputs.weight_version,
+                            )
                         # NOTE: RequestOutputs are pushed to their queues.
                         assert not processed_outputs.request_outputs
 

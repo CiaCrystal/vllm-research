@@ -1,0 +1,27 @@
+{
+  "accuracy": 0.7740712661106899,
+  "invalid_rate": 0.000758150113722517,
+  "latency": 187.76203390583396,
+  "questions_per_second": 7.0248493402106105,
+  "total_output_tokens": 156565,
+  "tokens_per_second": 833.8480189159017,
+  "num_questions": 1319,
+  "num_shots": 5,
+  "max_tokens": 256,
+  "timestamp": 1794049471.276238,
+  "request_params": {
+    "endpoint": "completions",
+    "model": "/root/rivermind-data/ckpt/int8_24_obr_mix",
+    "temperature": 0.0,
+    "top_p": null,
+    "top_k": null,
+    "seed": 42,
+    "stop": [
+      "Question",
+      "Assistant:",
+      "<|separator|>"
+    ],
+    "reasoning_effort": null,
+    "chat_template_kwargs": null
+  }
+}

@@ -13,11 +13,15 @@ ap.add_argument("--limit", type=int, default=36)
 ap.add_argument("--check", action="store_true")
 ap.add_argument("--tol", type=float, default=1e-3)
 ap.add_argument("--maxit", type=int, default=40)
+ap.add_argument("--calib", default="", help="Tensor file of [128, 2048] calibration token ids.")
+ap.add_argument("--root", default="/root/obr_ckpt")
+ap.add_argument("--tag", default="")
+ap.add_argument("--root4", default="", help="Write the INT4 checkpoint here instead of --root.")
 args = ap.parse_args()
 
 W = pathlib.Path("/root/rivermind-data")
 SRC = pathlib.Path(glob.glob(str(W / "hf/hub/models--Qwen--Qwen3-8B/snapshots/*/config.json"))[0]).parent
-ROOT = pathlib.Path("/root/obr_ckpt")
+ROOT = pathlib.Path(args.root)
 LEVELS = {"int8": 127, "int4": 7}
 LINEAR = ("self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj", "mlp.gate_proj", "mlp.up_proj", "mlp.down_proj")
 SHARED = {"self_attn.k_proj": "self_attn.q_proj", "self_attn.v_proj": "self_attn.q_proj", "mlp.up_proj": "mlp.gate_proj"}
@@ -115,6 +119,10 @@ ids = tok((W / "data/wiki_train.txt").read_text(), return_tensors="pt", add_spec
 g = torch.Generator().manual_seed(0)
 starts = torch.randint(0, ids.numel() - 2049, (128,), generator=g)
 data = torch.stack([ids[s:s + 2048] for s in starts.tolist()])
+if args.calib:
+    data = torch.load(args.calib)
+    assert data.shape == (128, 2048), data.shape
+    print("calibration from", args.calib, flush=True)
 print("tokens", ids.numel(), round(time.time() - t0), flush=True)
 model = AutoModelForCausalLM.from_pretrained(SRC, dtype=torch.bfloat16).eval()
 m = model.model
@@ -127,7 +135,9 @@ with safe_open(SRC / "model-00001-of-00005.safetensors", "pt") as _:
     pass
 index = json.loads((SRC / "model.safetensors.index.json").read_text())["weight_map"]
 get = lambda k: safe_open(SRC / index[k], "pt").get_tensor(k)
-dirs = {lv: ROOT / f"{lv}_24_obr" for lv in LEVELS}
+dirs = {lv: ROOT / f"{lv}_24_obr{args.tag}" for lv in LEVELS}
+if args.root4:
+    dirs["int4"] = pathlib.Path(args.root4) / f"int4_24_obr{args.tag}"
 if args.limit == 36:
     for d in dirs.values():
         d.mkdir(parents=True, exist_ok=True)

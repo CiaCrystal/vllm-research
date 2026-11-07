@@ -87,6 +87,7 @@ from vllm.v1.outputs import (
     ECConnectorOutput,
     ModelRunnerOutput,
 )
+from vllm.v1.utils import record_function_or_nullcontext
 from vllm.v1.watermarking import create_watermarker
 from vllm.v1.watermarking.gpu_sampler import GPUWatermarkSampler
 from vllm.v1.watermarking.spec_decode import (
@@ -1929,10 +1930,11 @@ class GPUModelRunner(LoRAModelRunnerMixin):
             if self.observability_config.cudagraph_metrics:
                 cudagraph_stats = make_cudagraph_stats(batch_desc, num_toks)
             assert batch_req_state is not None
-            input_batch = self.prepare_inputs(
-                scheduler_output, batch_req_state, batch_desc, num_active_loras
-            )
-            block_tables, slot_mappings = self.prepare_attn(input_batch)
+            with record_function_or_nullcontext("runner: prepare_inputs"):
+                input_batch = self.prepare_inputs(
+                    scheduler_output, batch_req_state, batch_desc, num_active_loras
+                )
+                block_tables, slot_mappings = self.prepare_attn(input_batch)
             # Mamba prefix-cache pre-copy: migrate recurrent state across block
             # boundaries before the forward. Runs only on real batches, and
             # before model_state.prepare_attn gathers num_accepted_tokens so the
