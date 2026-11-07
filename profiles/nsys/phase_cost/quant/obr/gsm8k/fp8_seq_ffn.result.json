@@ -1,0 +1,27 @@
+{
+  "accuracy": 0.027293404094010616,
+  "invalid_rate": 0.0037907505686125853,
+  "latency": 43.387786695999694,
+  "questions_per_second": 30.40026008336605,
+  "total_output_tokens": 118133,
+  "tokens_per_second": 2722.7247342140117,
+  "num_questions": 1319,
+  "num_shots": 5,
+  "max_tokens": 256,
+  "timestamp": 1794021400.0626135,
+  "request_params": {
+    "endpoint": "completions",
+    "model": "/home/bca/models/obr/fp8_seq_ffn",
+    "temperature": 0.0,
+    "top_p": null,
+    "top_k": null,
+    "seed": 42,
+    "stop": [
+      "Question",
+      "Assistant:",
+      "<|separator|>"
+    ],
+    "reasoning_effort": null,
+    "chat_template_kwargs": null
+  }
+}

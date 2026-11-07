@@ -245,6 +245,7 @@ def validate_flashinfer_moe_ep_model(
 LinearBackend = Literal[
     "auto",
     "cutlass",
+    "cutlass_sparse",
     "flashinfer_cutlass",
     "flashinfer_cutedsl",
     "flashinfer_trtllm",
@@ -378,6 +379,8 @@ class KernelConfig:
 
     - "auto": Automatically select the best backend based on model and hardware
     - "cutlass": Use CUTLASS-based kernels
+    - "cutlass_sparse": Use the 2:4 sparse FP8 kernel (SM120, per-channel
+      checkpoints with at most 2 nonzero weights in each group of 4 inputs)
     - "flashinfer_cutlass": Use FlashInfer with CUTLASS kernels
     - "flashinfer_cutedsl": Use FlashInfer with CuTe-DSL kernels
       (BF16, NVFP4, MXFP8, W4A16_NVFP4)

@@ -10,11 +10,11 @@
 | ---- | ---- |
 | 分支 | `research/nvtx-profiling` |
 | 基线提交 | `d038985573`（Ignore local profiling artifacts） |
-| 提交状态 | **全部未提交**。用户要求不 commit、不 push，等待审阅 |
+| 提交状态 | CHG-010 及之前由用户提交并 push（`5177252a24`）。CHG-011 未提交 |
 | 审阅状态 | 用户已于 2026-11-06 接受 CHG-001 至 CHG-004 |
 | 功能 | `VLLM_NVTX_ENABLE=1` 时输出 `Step/{Prefill,Decode,Mixed}` 和 `{阶段}/Layer_NN/{Attention,FFN}` |
 | 已验证模型 | Qwen3-0.6B（28 层），`Qwen/Qwen3-0.6B`，已在本地 HF 缓存 |
-| 最近一次测量 | 2026-11-06，eager 见 CHG-006，非 eager 基线和量化可行性见 CHG-007，量化对比见 CHG-008，TTFT 和 TPOT 见 CHG-009，OBR 可行性见 CHG-010。报告在 `profiles/nsys/phase_cost/report.md`、`profiles/nsys/phase_cost/noneager/report.md`、`profiles/nsys/phase_cost/quant/report.md` 和 `profiles/nsys/phase_cost/quant/sparsity/report.md` |
+| 最近一次测量 | 2026-11-06，eager 见 CHG-006，非 eager 基线和量化可行性见 CHG-007，量化对比见 CHG-008，TTFT 和 TPOT 见 CHG-009，OBR 可行性见 CHG-010，OBR 精度和稀疏 kernel 见 CHG-011。报告在 `profiles/nsys/phase_cost/report.md`、`profiles/nsys/phase_cost/noneager/report.md`、`profiles/nsys/phase_cost/quant/report.md` 和 `profiles/nsys/phase_cost/quant/sparsity/report.md` |
 
 本任务改动的文件：
 
@@ -24,6 +24,14 @@
 - `vllm/v1/worker/gpu_worker.py`
 - `docs/contributing/profiling.md`
 - `.agents/research/nvtx-profiling-changelog.md`（本文件）
+
+OBR 稀疏 kernel 实验新增的文件（CHG-011，未提交）：
+
+- `csrc/quantization/w8a8/cutlass/c3x/sparse_fp8_mm_sm120.cu`（新增）
+- `tools/build_sparse_fp8_sm120.sh`（新增）
+- `vllm/model_executor/kernels/linear/scaled_mm/cutlass_sparse.py`（新增）
+- `vllm/model_executor/kernels/linear/__init__.py`
+- `vllm/config/kernel.py`
 
 工作区里**不属于本任务**、必须保留的内容：`AGENTS.md` 的本地修改（用户写的本地环境约定）和 `profiles/`（用户的 profiling 产物）。不要 reset、checkout 或 stash。
 
@@ -36,6 +44,7 @@
 - 不 commit、不 push；原始 profiling 文件不进 Git。
 - 只做 Profiling，不做量化、剪枝、算子融合等优化，不改模型计算逻辑。
   - 例外（用户 2026-11-06 要求）：允许做量化对比测量，方式限于 CLI 参数和放在仓库外的量化 checkpoint。仍不改源码。
+  - 例外（用户 2026-11-07 批准）：允许复现 OBR 精度，并新增 2:4 稀疏 kernel（含 C++）。这只针对这项实验，不代表其他优化也放开。
 - 热路径禁止 GPU 同步或拷贝：`synchronize`、`.item()`、`.cpu()`、`.tolist()`。
 - WSL 下运行需要：
 
@@ -89,6 +98,14 @@ export LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/lib/wsl/drivers/nv_dispi.inf_amd64_
 36. **非流式请求没有客户端 TTFT。** 可以从 nsys 取采样 kernel（`reduce_kernel`、`_gumbel_sample_kernel`）的结束时间算出每个 token 的就绪时刻，得到的是引擎侧数值。本次它比客户端总耗时少 4.5～7.4 ms。
 37. **稠密 kernel 不跳过零，权重置零不提速。** 50% 剪枝后的 INT8 和未剪枝版本的 TTFT、TPOT、整体耗时差异在噪声内，模型显存和 KV 容量完全相同。带目标的 `sparsity_config` 会在 `compressed_tensors.py:298` 报错。vLLM 没有稀疏线性 kernel，所以剪枝类论文的提速不能靠 checkpoint 复现。
 38. **无补偿的 50% 幅值剪枝会毁掉 Qwen3-0.6B。** GSM8K 从 36.6% 跌到 2.1%，1319 条回答全部循环到 256 token 上限。这是无补偿剪枝的结果，不代表 OBR。
+39. **困惑度保住不代表算术能力保住。** OBR 把非结构化 50% 的困惑度控制在 19.57（基线 16.51），GSM8K 仍从 39% 跌到 2.1%。这不是 vLLM 路径问题，HF 加浮点激活跑前 160 题也是 2.5%。评估剪枝不能只看困惑度。
+40. **SM120 有原生 2:4 稀疏 Tensor Core，但只有 FP8/FP6/FP4。** 见 CUTLASS 的 `mma_sm120_sparse.hpp`，没有 INT4/INT8。稀疏时 k 为 64，稠密为 32。
+41. **`.venv` 有 nvcc 和 CUTLASS，但没有 cmake。** nvcc 在 `nvidia/cu13/bin`，CUTLASS 在 `flashinfer/data/cutlass`（工具头文件在 `tools/util/include`）。要用 `-gencode=arch=compute_120a,code=sm_120a`，`-arch=sm_120` 和 `sm_120f` 都会在 ptxas 报 `.kind::f8f6f4 not supported`。nvcc 13.5 配 13.2 头文件要加 `-DCCCL_DISABLE_CTK_COMPATIBILITY_CHECK`。`-fPIC` 要写成 `-Xcompiler -fPIC`，`libcudart` 只有 `.so.13`，要用 `-Xlinker <路径>`。
+42. **稀疏操作数只能是 A，所以权重要当 A。** 这时 token 在 N 维。D 要用 ColumnMajor，既满足 N 不对齐的情况，也和 torch 的 `[token, 输出]` 内存布局一致，x 也不用拷贝。元数据每个 atom 是 128×128，2048 字节，先沿 m 再沿 k，每组 4 位，编码见 `cutlass_sparse.py`。
+43. **稀疏 kernel 只在大批量有明显收益。** 1024 token 以上约快 1.3～2.4 倍，256 token 以下耗时只有 25～50 µs 且波动大。所以 Decode（M 为 1 或 8）的 TPOT 没有收益。
+44. **`FP8ScaledMMLinearKernel.apply_weights` 用 `w.shape[1]` 推输出宽度。** 换权重布局的 kernel 不能直接用它给的 `output_shape`。
+45. **生成多份完整 checkpoint 时不要把浮点权重留在内存里。** 5 份 float32 的线性层权重加 Hessian 超过 15 GB，进程被杀，日志没有报错，只是最后一行停住。生成时就压成 1 字节。
+46. **会话临时目录跨天会被清空。** 这次的脚本都没了。要保留的脚本放到 `/home/bca/models/obr/scripts/`。
 
 ## 设计决定
 
@@ -277,6 +294,27 @@ export LD_LIBRARY_PATH=/usr/lib/wsl/lib:/usr/lib/wsl/drivers/nv_dispi.inf_amd64_
   - 8 次流式运行和 1 次 GSM8K 全部完成，usage 校验通过，剪枝权重零值占比 50.0%～50.1%。
   - 未验证：OBR 在 Qwen3-0.6B 上的精度和校准耗时；W4A16；4-bit KV cache；论文的提速数字和 2:4 kernel。论文内容来自页面读取，未逐表核对。
   - `ruff`、`pre-commit`、`pytest` 仍未运行，本次只改了文档。
+- 状态：已提交（`5177252a24`，用户提交）
+
+### CHG-011：复现 OBR 精度并新增 2:4 稀疏 FP8 kernel
+
+- 日期 / 作者：2026-11-07 / Claude Code
+- 文件：见「当前状态」的 CHG-011 文件列表，以及本文件。
+- 内容：
+  - 新增 `--linear-backend cutlass_sparse`：SM120 的 2:4 稀疏 FP8 linear kernel。默认选择不受影响，放在 `_POSSIBLE_FP8_KERNELS` 末尾，只有显式指定才会用。
+  - 新增 `tools/build_sparse_fp8_sm120.sh`，用 `.venv` 的 nvcc 编译 `vllm/_sparse_fp8_sm120.so`，运行时用 `ctypes` 加载。未接入 CMake，因为环境没有 `cmake`。
+  - 「不要重新踩的坑」新增第 39 至 46 条，「必须遵守的约束」增加例外。
+  - 报告在 `profiles/nsys/phase_cost/quant/obr/report.md`。checkpoint、Hessian 和脚本在 `/home/bca/models/obr/`，不进 Git。
+- 原因：用户要求复现 OBR 精度并批准写 kernel。硬件没有 INT4 稀疏 MMA，所以实现的是 FP8。
+- 结果：
+  - GSM8K：bf16 39.04%、39.58%，稠密 FP8 38.59%。2:4 + OBR 为 0.91%～1.74%，级联校准后 1.36%，只剪 FFN 2.73%，非结构化 50% 2.12%。无补偿 0.99%。
+  - 困惑度：基线 16.51，稠密 FP8 16.65，无补偿 93.84，2:4 + OBR 37.46，加级联 30.92，只剪 FFN 22.32，非结构化 19.57。
+  - 稀疏 vs 稠密 FP8（同一 checkpoint，流式，2 轮）：TTFT −19%～−28%，整体耗时 −2%～−12%，TPOT 在噪声内。
+  - 微基准（空闲 GPU）：相对稠密 FP8，1024 token 以上为 0.41～0.75 倍，256 token 以下不下结论。
+- 验证：
+  - `compress_24` 和 kernel：5 种形状、批量和单值 scale，相对误差 0.17%，非 2:4 权重被拒绝。
+  - 端到端：`Selected CutlassSparseFP8ScaledMMLinearKernel`，GSM8K 1.67%（同一 checkpoint 的稠密 kernel 1.36%）。
+  - 未验证：加载后的实际显存；E2M1、FP6；其他 GPU；A 上 TTFT 下降的原因；论文的 5.9 倍；OBR 官方实现的对照。`ruff`、`pre-commit`、`pytest` 仍未运行，没有写仓库测试。
 - 状态：未提交
 
 ## 验证结果
